@@ -289,7 +289,7 @@ namespace TM1650Display {
     }
 
     //% help=TM1650Display/displayOn TM1650Display weight=65
-    //% blockId=TM1650_display_configure block="Configure a TM1650 display|%name| with clock %scl|data %sda"
+    //% blockId=TM1650_display_configure block="Configure a TM1650 display|named %name| with clock %scl|data %sda"
     //% parts = "TM1650"
     export function configure(name: string = "display1", scl:DigitalPin = DigitalPin.P1, sda:DigitalPin = DigitalPin.P0 ) {
         let index: number = 0
@@ -308,7 +308,7 @@ namespace TM1650Display {
     }
 
     //% help=TM1650Display/displayOn TM1650Display weight=55
-    //% blockId=TM1650_display_on block="TM1650 turn on display|name %name|at brightness %brightness"
+    //% blockId=TM1650_display_on block="TM1650 turn on display|named %name|at brightness %brightness"
     //% parts="TM1650"
     export function displayOn(name: string = "TM1650Display1", brightness: number = 0) {
         let index: number = getInstanceIndex(name)
@@ -333,35 +333,35 @@ namespace TM1650Display {
     }
 
     //% help=TM1650Display/showChar TM1650Display weight=50
-    //% blockId=TM1650Display_showChar block="TM1650Display show character|at pos %pos|%c"
+    //% blockId=TM1650Display_showChar block="TM1650 display character|position %pos|char %c"
     //% parts="TM1650"
     export function showChar(pos: number = 0, c: number = 0) {
         instances[currentInstanceIndex].showChar(pos, c)
     }
 
     //% help=TM1650Display/showInteger TM1650Display weight=39
-    //% blockId=TM1650Display_showInteger block="TM1650Display integer|%n"
+    //% blockId=TM1650Display_showInteger block="TM1650 display integer|%n"
     //% parts="TM1650"
     export function showInteger(n: number = 0) {
         instances[currentInstanceIndex].showInteger(n)
     }
 
     //% help=TM1650Display/showDecimal TM1650Display weight=40
-    //% blockId=TM1650Display_showDecimal block="TM1650Display decimal number|%n"
+    //% blockId=TM1650Display_showDecimal block="TM1650 display decimal number|%n"
     //% parts="TM1650"
     export function showDecimal(n: number = 0) {
         instances[currentInstanceIndex].showDecimal(n)
     }
 
     //% help=TM1650Display/showHex TM1650Display weight=38
-    //% blockId=TM1650Display_showHex block="TM1650 Display hex number|%n"
+    //% blockId=TM1650Display_showHex block="TM1650 display hex number|%n"
     //% parts="TM1650"
     export function showHex(n: number = 0) {
         instances[currentInstanceIndex].showHex(n)
     }
 
     //% help=TM1650Display/showString TM1650Display weight=45
-    //% blockId=TM1650Display_showString block="TM1650 Display string|%s"
+    //% blockId=TM1650Display_showString block="TM1650 display string|%s"
     //% parts="TM1650"
     export function showString(s: string = "    ") {
         instances[currentInstanceIndex].showString(s)
