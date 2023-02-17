@@ -33,14 +33,10 @@ namespace TM1650Display {
             this.sendpair(0x48, 0)
         }
         public displayClear() {
-            this.sendpair(digaddress[0], 0)
-            this.sendpair(digaddress[1], 0)
-            this.sendpair(digaddress[2], 0)
-            this.sendpair(digaddress[3], 0)
-            this.displayDigits[0] = 0
-            this.displayDigits[1] = 0
-            this.displayDigits[2] = 0
-            this.displayDigits[3] = 0
+            for( let i = 0 ; i < 4 ; i++ ) {
+                this.sendpair(digaddress[i], 0)
+                this.displayDigits[i] = 0
+            }
         }
         public showChar(pos: number = 0, c: number = 0) {
             let charindex = 30
@@ -125,34 +121,24 @@ namespace TM1650Display {
             }
         }
         public showHex(n: number = 0) {
-            let outc3: number[] = [32, 32, 32, 32]
             let j = 3
-            let d = 0
-            let absn2 = 0
 
             if ((n > 0xFFFF) || (n < -32768)) {
                 this.showString("Err ")
             } else {
+                for( j = 0 ; j < 3 ; j++ ) {
+                    this.displayDigits[j] = 0
+                }
+                this.displayDigits[3] = chargen[0]
                 if (n < 0) {
                     n = 0x10000 + n
                 }
-                if (n == 0) {
-                    outc3[3] = 0x30
-                } else {
-                    while (n != 0) {
-                        d = (n % 16)
-                        if (d < 10) {
-                            d += 0x30
-                        } else {
-                            d += 55
-                        }
-                        outc3[j] = d
-                        n = Math.floor(n / 16)
-                        j = j - 1
-                    }
+               for( j = 3 ; (n != 0) ; j-- ) {
+                    this.displayDigits[j] = chargen[n & 15]
+                    n >>= 4
                 }
                 for (j = 0; j < 4; j++) {
-                    this.showChar(j, outc3[j])
+                    this.sendpair(digaddress[j], this.displayDigits[j])
                 }
             }
         }
@@ -304,7 +290,6 @@ namespace TM1650Display {
             instances[index].reconfigure(scl, sda)
             currentInstanceIndex = index
         }
-
     }
 
     //% help=TM1650Display/displayOn TM1650Display weight=55
@@ -358,6 +343,13 @@ namespace TM1650Display {
     //% parts="TM1650"
     export function showHex(n: number = 0) {
         instances[currentInstanceIndex].showHex(n)
+    }
+
+    //% help=TM1650Display/toggleDP TM1650Display weight=38
+    //% blockId=TM1650Display_toggleDP block="TM1650 toggle decimal point at|digit %pos"
+    //% parts="TM1650"
+    export function toggleDP(pos: number = 0){
+        instances[currentInstanceIndex].toggleDP(pos)
     }
 
     //% help=TM1650Display/showString TM1650Display weight=45
