@@ -288,27 +288,27 @@ namespace TM1650Display {
         return i
     }
 
-    //% help=TM1650Display/configure TM1650Display weight=65
-    //% blockId=TM1650Display_configure block="TM1650Display configure|name %name|clockPin %clockPin|dataPin %dataPin"
-    //% parts="TM1650"
-    export function configure(name: string = "disp1", clockPin: DigitalPin = DigitalPin.P1, dataPin: DigitalPin.P0) {
+    //% help=TM1650Display/displayOn TM1650Display weight=65
+    //% blockId=TM1650_display_configure block="Configure a TM1650 display|%name| with clock %scl|data %sda"
+    //% parts = "TM1650"
+    export function configure(name: string = "display1", scl:DigitalPin = DigitalPin.P1, sda:DigitalPin = DigitalPin.P0 ) {
         let index: number = 0
 
         index = getInstanceIndex(name)
         if (index == instancecount) {
             instanceNames[instancecount] = name;
-            instances[instancecount] = new instanceClass(clockPin, dataPin)
+            instances[instancecount] = new instanceClass(scl, sda)
             currentInstanceIndex = index
             instancecount++
         } else {
-            instances[index].reconfigure(clockPin, dataPin)
+            instances[index].reconfigure(scl, sda)
             currentInstanceIndex = index
         }
 
     }
 
     //% help=TM1650Display/displayOn TM1650Display weight=55
-    //% blockId=TM1650Display_displayOn block="TM1650Display displayOn|name %name|brightness %brightness"
+    //% blockId=TM1650_display_on block="TM1650 turn on display|name %name|at brightness %brightness"
     //% parts="TM1650"
     export function displayOn(name: string = "TM1650Display1", brightness: number = 0) {
         let index: number = getInstanceIndex(name)
@@ -319,49 +319,49 @@ namespace TM1650Display {
     }
 
     //% help=TM1650Display/displayOff TM1650Display weight=54
-    //% blockId=TM1650Display_displayOff block="TM1650Display displayOff"
+    //% blockId=TM1650_display_off block="TM1650 turn display off"
     //% parts="TM1650"
     export function displayOff() {
         instances[currentInstanceIndex].displayOff()
     }
 
     //% help=TM1650Display/displayClear TM1650Display weight=53
-    //% blockId=TM1650Display_displayClear block="TM1650Display displayClear"
+    //% blockId=TM1650_display_clear block="TM1650 clear display"
     //% parts="TM1650"
     export function displayClear() {
         instances[currentInstanceIndex].displayClear()
     }
 
     //% help=TM1650Display/showChar TM1650Display weight=50
-    //% blockId=TM1650Display_showChar block="TM1650Display showChar|pos %pos|c %c"
+    //% blockId=TM1650Display_showChar block="TM1650Display show character|at pos %pos|%c"
     //% parts="TM1650"
     export function showChar(pos: number = 0, c: number = 0) {
         instances[currentInstanceIndex].showChar(pos, c)
     }
 
     //% help=TM1650Display/showInteger TM1650Display weight=39
-    //% blockId=TM1650Display_showInteger block="TM1650Display showInteger|n %n"
+    //% blockId=TM1650Display_showInteger block="TM1650Display integer|%n"
     //% parts="TM1650"
     export function showInteger(n: number = 0) {
         instances[currentInstanceIndex].showInteger(n)
     }
 
     //% help=TM1650Display/showDecimal TM1650Display weight=40
-    //% blockId=TM1650Display_showDecimal block="TM1650Display showDecimal|n %n"
+    //% blockId=TM1650Display_showDecimal block="TM1650Display decimal number|%n"
     //% parts="TM1650"
     export function showDecimal(n: number = 0) {
         instances[currentInstanceIndex].showDecimal(n)
     }
 
     //% help=TM1650Display/showHex TM1650Display weight=38
-    //% blockId=TM1650Display_showHex block="TM1650Display showHex|n %n"
+    //% blockId=TM1650Display_showHex block="TM1650 Display hex number|%n"
     //% parts="TM1650"
     export function showHex(n: number = 0) {
         instances[currentInstanceIndex].showHex(n)
     }
 
     //% help=TM1650Display/showString TM1650Display weight=45
-    //% blockId=TM1650Display_showString block="TM1650Display showString|s %s"
+    //% blockId=TM1650Display_showString block="TM1650 Display string|%s"
     //% parts="TM1650"
     export function showString(s: string = "    ") {
         instances[currentInstanceIndex].showString(s)
