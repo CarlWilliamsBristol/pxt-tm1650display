@@ -14,22 +14,4 @@ basic.forever(function () {
             counter = 0
         }
     }
-    basic.pause(100)
-    if (( counter & 1 ) == 0) {
-        basic.showLeds(`
-            . . . . .
-            . . . . .
-            . . # . .
-            . . . . .
-            . . . . .
-            `)
-    } else {
-        basic.showLeds(`
-            . . . . .
-            . . # . .
-            . # # # .
-            . . # . .
-            . . . . .
-            `)
-    }
 })
