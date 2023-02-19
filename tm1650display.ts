@@ -10,20 +10,26 @@ namespace TM1650Display {
         public displayDigits: number[] = [0, 0, 0, 0]
 
         constructor(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
-            this.clockpin = clock
-            this.datapin = data
-            pins.setPull(clock, PinPullMode.PullUp)
-            pins.setPull(data, PinPullMode.PullUp)
-            this.goidle()
+            this.setSpeed( 2000 )
+            this.reconfigure( clock, data )
+        }
+        public setSpeed( baud : number = 2000 ){
+            let clocklength = 1000000 / baud   /* microseconds per clock */
+            if(clocklength > 10) {
+                this.pulsewidth = clocklength / 2
+                this.halfpulsewidth = clocklength / 4
+                this.shortdelay = clocklength / 10
+            }
         }
         public reconfigure(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
             this.clockpin = clock
             this.datapin = data
-            pins.setPull(clock, PinPullMode.PullUp)
-            pins.setPull(data, PinPullMode.PullUp)
+            this.goidle()
+            this.sendstart()
             this.goidle()
         }
         public displayOn(brightness: number = 0) {
+            this.goidle()
             brightness &= 7
             brightness <<= 4
             brightness |= 1
@@ -166,6 +172,9 @@ namespace TM1650Display {
 
         private clockpin: DigitalPin
         private datapin: DigitalPin
+        private pulsewidth: number 
+        private halfpulsewidth: number
+        private shortdelay: number
         private chartoindex(c: number) {
             let charcode = 30
             if (c < 30) {
@@ -212,15 +221,15 @@ namespace TM1650Display {
         private sendstart() {
             /* Clock and data both start at 1 */
             pins.digitalWritePin(this.datapin, 0)
-            control.waitMicros(250)
+            control.waitMicros(this.pulsewidth)
             pins.digitalWritePin(this.clockpin, 0)
-            control.waitMicros(50)
+            control.waitMicros(this.shortdelay)
         }
         private goidle() {
             pins.digitalWritePin(this.clockpin, 1)
-            control.waitMicros(250)
+            control.waitMicros(this.pulsewidth)
             pins.digitalWritePin(this.datapin, 1)
-            control.waitMicros(250)
+            control.waitMicros(this.pulsewidth)
         }
         private sendbyte(byte: number) {
             /* Resting is both clock and data HIGH. */
@@ -230,32 +239,32 @@ namespace TM1650Display {
             let ackbit = 0
 
             while (bitmask != 0) {
-                control.waitMicros(150)
+                control.waitMicros(this.halfpulsewidth)
                 if ((byte & bitmask) == 0) {
                     pins.digitalWritePin(this.datapin, 0)
                 } else {
                     pins.digitalWritePin(this.datapin, 1)
                 }
-                control.waitMicros(100)
+                control.waitMicros(this.halfpulsewidth)
                 pins.digitalWritePin(this.clockpin, 1)
-                control.waitMicros(250)
+                control.waitMicros(this.pulsewidth)
                 pins.digitalWritePin(this.clockpin, 0)
                 bitmask >>= 1
             }
             /* Clock is now low and we want the ACK bit so this time read SDA */
             /* SDA is unknown, give a brief delay then drop data to zero */
-            control.waitMicros(25)
+            control.waitMicros(this.shortdelay)
             pins.digitalWritePin(this.datapin, 0)
-            control.waitMicros(250)
+            control.waitMicros(this.pulsewidth)
             /* Do one clock */
             pins.digitalWritePin(this.clockpin, 1)
-            control.waitMicros(250)
+            control.waitMicros(this.pulsewidth)
             pins.digitalWritePin(this.clockpin, 0)
             /* Display takes 120+ microseconds to send ack */
-            control.waitMicros(150)
+            control.waitMicros(this.halfpulsewidth + this.shortdelay)
             ackbit = pins.digitalReadPin(this.datapin)
             pins.digitalWritePin(this.datapin, 0)
-            control.waitMicros(100)
+            control.waitMicros(this.halfpulsewidth)
         }
     }
     let instanceNames: string[] = []
@@ -357,5 +366,12 @@ namespace TM1650Display {
     //% parts="TM1650"
     export function showString(s: string = "    ") {
         instances[currentInstanceIndex].showString(s)
+    }
+
+    //% help=TM1650Display/setSpeed TM1650Display weight=25
+    //% blockId=TM1650Display_showString block="TM1650 change interface speed|baud %baud"
+    //% parts="TM1650"
+    export function setSpeed( baud : number = 2000 ){
+         instances[currentInstanceIndex].setSpeed( baud )
     }
 }
