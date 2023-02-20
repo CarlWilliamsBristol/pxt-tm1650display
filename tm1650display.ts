@@ -312,37 +312,28 @@ namespace tm1650Display {
     //% parts="TM1650"
     export function displayOn(name: string = "display1", brightness: number = 0) {
         let index: number = findInstanceIndex(name)
-        let status = -1
         if (index != instanceCount) {
             currentInstanceIndex = index
             instances[currentInstanceIndex].displayOn(brightness)
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/displayOff tm1650Display weight=54
     //% blockId=TM1650_displayOff block="TM1650 turn display off"
     //% parts="TM1650"
     export function displayOff() {
-        let status = -1
         if(instanceCount > 0){
-            status = 0
             instances[currentInstanceIndex].displayOff()
         }
-        return status
     }
 
     //% help=tm1650Display/displayClear tm1650Display weight=53
     //% blockId=TM1650_displayClear block="TM1650 clear display"
     //% parts="TM1650"
     export function displayClear() {
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].displayClear()
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/showChar tm1650Display weight=50
@@ -350,12 +341,9 @@ namespace tm1650Display {
     //% pos.min=0 pos.max=3 pos.defl=0 c.min=0 c.max=255 c.defl=0x30
     //% parts="TM1650"
     export function showChar(pos: number = 0, c: number = 0) {
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showChar(pos, c)
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/showInteger tm1650Display weight=39
@@ -363,12 +351,9 @@ namespace tm1650Display {
     //% n.min=-999 n.max=9999 n.defl=0
     //% parts="TM1650"
     export function showInteger(n: number = 0) {
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showInteger(n)
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/showDecimal tm1650Display weight=40
@@ -376,12 +361,9 @@ namespace tm1650Display {
     //% n.min=-999 n.max=9999 n.defl=0
     //% parts="TM1650"
     export function showDecimal(n: number = 0) {
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showDecimal(n)
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/showHex tm1650Display weight=38
@@ -389,12 +371,9 @@ namespace tm1650Display {
     //% n.min=-32768 n.max=65535 n.defl=0
     //% parts="TM1650"
     export function showHex(n: number = 0) {
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showHex(n)
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/toggleDP tm1650Display weight=38
@@ -402,12 +381,9 @@ namespace tm1650Display {
     //% pos.min=0 pos.max=3 pos.defl=0
     //% parts="TM1650"
     export function toggleDP(pos: number = 0){
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].toggleDP(pos)
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/showString tm1650Display weight=45
@@ -415,12 +391,9 @@ namespace tm1650Display {
     //% s.defl="HEL0"
     //% parts="TM1650"
     export function showString(s: string = "HEL0") {
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showString(s)
-            status = 0
         }
-        return status
     }
 
     //% help=tm1650Display/setSpeed tm1650Display weight=25
@@ -428,11 +401,8 @@ namespace tm1650Display {
     //% baud.min=200 baud.max=100000 baud.defl=4000
     //% parts="TM1650"
     export function setSpeed( baud : number = 4000 ){
-        let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].setSpeed( baud )
-            status = 0
         }
-        return status
     }
 }
