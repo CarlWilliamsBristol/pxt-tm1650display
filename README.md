@@ -1,4 +1,4 @@
-bbc micro:bit class to drive cheap tm1650-based 4-digit 7-segment LED display. Written for and tested with a "Gravity" branded unit from PiHut.
+BBC micro:bit class to drive cheap tm1650-based 4-digit 7-segment LED display. Written for and tested with a "Gravity" branded unit from PiHut, see: https://thepihut.com/products/gravity-4-digit-red-seven-segment-led-display-module.
 
 The TM1650 display/keyboard adapter is a minimalist kind of 2-wire serial interface for simple display plus keyboard modules used in consumer electronics.
 
