@@ -9,7 +9,8 @@
     "files": [
         "README.md",
         "tm1650display.ts",
-        "main.ts"
+        "main.ts",
+        "main.blocks.ts"
     ],
     "testFiles": [
         "test.ts"
