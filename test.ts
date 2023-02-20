@@ -6,4 +6,3 @@ namespace tm1650DisplayTests {
         tm1650Display.showString("HEL0")
     }
 }
-tm1650display.ts
