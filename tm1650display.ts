@@ -288,6 +288,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/configure tm1650Display weight=65
     //% blockId=TM1650_configure block="Configure a TM1650 display|named %name| with clock %scl|data %sda"
+    //% name.defl="display1"
     //% parts = "TM1650"
     export function configure(name: string = "display1", scl:DigitalPin = DigitalPin.P1, sda:DigitalPin = DigitalPin.P0 ) {
         let index: number = 0
@@ -306,6 +307,8 @@ namespace tm1650Display {
 
     //% help=tm1650Display/displayOn tm1650Display weight=55
     //% blockId=TM1650_displayOn block="TM1650 turn on display|named %name|at brightness %brightness"
+    //% name.defl="display1"
+    //% brightness.min=0 brightness.max=7 brightness.defl=5
     //% parts="TM1650"
     export function displayOn(name: string = "display1", brightness: number = 0) {
         let index: number = findInstanceIndex(name)
@@ -331,6 +334,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/showChar tm1650Display weight=50
     //% blockId=tm1650Display_showChar block="TM1650 display character|position %pos|char %c"
+    //% pos.min=0 pos.max=3 pos.defl=0 c.min=0 c.max=255 c.defl=0x30
     //% parts="TM1650"
     export function showChar(pos: number = 0, c: number = 0) {
         instances[currentInstanceIndex].showChar(pos, c)
@@ -338,6 +342,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/showInteger tm1650Display weight=39
     //% blockId=tm1650Display_showInteger block="TM1650 display integer|%n"
+    //% n.min=-999 n.max=9999 n.defl=0
     //% parts="TM1650"
     export function showInteger(n: number = 0) {
         instances[currentInstanceIndex].showInteger(n)
@@ -345,6 +350,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/showDecimal tm1650Display weight=40
     //% blockId=tm1650Display_showDecimal block="TM1650 display decimal number|%n"
+    //% n.min=-999 n.max=9999 n.defl=0
     //% parts="TM1650"
     export function showDecimal(n: number = 0) {
         instances[currentInstanceIndex].showDecimal(n)
@@ -352,6 +358,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/showHex tm1650Display weight=38
     //% blockId=tm1650Display_showHex block="TM1650 display hex number|%n"
+    //% n.min=-32768 n.max=65535 n.defl=0
     //% parts="TM1650"
     export function showHex(n: number = 0) {
         instances[currentInstanceIndex].showHex(n)
@@ -359,6 +366,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/toggleDP tm1650Display weight=38
     //% blockId=tm1650Display_toggleDP block="TM1650 toggle decimal point at|digit %pos"
+    //% pos.min=0 pos.max=3 pos.defl=0
     //% parts="TM1650"
     export function toggleDP(pos: number = 0){
         instances[currentInstanceIndex].toggleDP(pos)
@@ -366,6 +374,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/showString tm1650Display weight=45
     //% blockId=tm1650Display_showString block="TM1650 display string|%s"
+    //% s.defl="HEL0"
     //% parts="TM1650"
     export function showString(s: string = "    ") {
         instances[currentInstanceIndex].showString(s)
@@ -373,8 +382,9 @@ namespace tm1650Display {
 
     //% help=tm1650Display/setSpeed tm1650Display weight=25
     //% blockId=tm1650Display_setSpeed block="TM1650 change interface speed|baud %baud"
+    //% baud.min=200 baud.max=100000 baud.defl=4000
     //% parts="TM1650"
-    export function setSpeed( baud : number = 2000 ){
+    export function setSpeed( baud : number = 4000 ){
          instances[currentInstanceIndex].setSpeed( baud )
     }
 }
