@@ -336,7 +336,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/configure tm1650Display weight=65
     //% blockId=TM1650_configure block="Configure a TM1650 display|named %name| with clock %scl|data %sda"
-    //% name.defl="display1"
+    //% name.defl="display1" scl.defl=DigitalPin.P1 sda.defl=DigitalPin.P0
     //% parts = "TM1650"
     export function configure(name: string = "display1", scl:DigitalPin = DigitalPin.P1, sda:DigitalPin = DigitalPin.P0 ) {
         let index: number = 0
