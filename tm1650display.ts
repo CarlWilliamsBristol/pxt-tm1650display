@@ -414,7 +414,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_showString block="TM1650 display string|%s"
     //% s.defl="HEL0"
     //% parts="TM1650"
-    export function showString(s: string = "    ") {
+    export function showString(s: string = "HEL0") {
         let status = -1
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showString(s)
