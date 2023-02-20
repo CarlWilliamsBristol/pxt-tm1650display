@@ -11,7 +11,14 @@ namespace tm1650Display {
         public displayDigits: number[] = [0, 0, 0, 0]
 
         constructor(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
-            this.setSpeed( 4000 )
+            pins.digitalWritePin(data, 1)
+            pins.digitalWritePin(clock, 1)
+            for(let i = 0 ; i < 9 ; ++i ){
+                control.waitMicros(this.pulseWidth)
+                pins.digitalWritePin(clock, 0)
+                control.waitMicros(this.pulseWidth)
+                pins.digitalWritePin(clock, 1)
+            }
             this.reconfigure( clock, data )
         }
         public setSpeed( baud : number = 4000 ){
@@ -26,11 +33,6 @@ namespace tm1650Display {
             this.clockPin = clock
             this.dataPin = data
             this.goIdle()
-            this.displayOn(5)
-            this.displayClear()
-            this.displayOff()
-            this.goIdle()
-            this.displayOn(5)
             this.displayClear()
             this.displayOff()
         }
