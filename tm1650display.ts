@@ -8,7 +8,7 @@ namespace tm1650Display {
     const digitAddress: number[] = [0x68, 0x6A, 0x6C, 0x6E]
 
     class Tm1650DisplayClass {
-        public displayDigits: number[] = [0, 0, 0, 0]
+        public displayDigitsRaw: number[] = [0, 0, 0, 0]
 
         constructor(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
             this.reconfigure(clock, data)
@@ -39,26 +39,31 @@ namespace tm1650Display {
         public displayClear() {
             for( let i = 0 ; i < 4 ; i++ ) {
                 this.sendPair(digitAddress[i], 0)
-                this.displayDigits[i] = 0
+                this.displayDigitsRaw[i] = 0
             }
+        }
+        public showSegments(pos: number = 0, pattern: number = 0){
+            pos &= 3
+            this.displayDigitsRaw[pos] = pattern
+            this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
         public showChar(pos: number = 0, c: number = 0) {
             let charindex = 30
             pos &= 3
             charindex = this.charToIndex(c)
             if (c == 0x2E) {
-                this.displayDigits[pos] |= 128
+                this.displayDigitsRaw[pos] |= 128
             } else {
-                this.displayDigits[pos] = characterBytes[charindex]
+                this.displayDigitsRaw[pos] = characterBytes[charindex]
             }
-            this.sendPair(digitAddress[pos], this.displayDigits[pos])
+            this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
         public showCharWithPoint(pos: number = 0, c: number = 0) {
             let charindex2 = 30
             pos &= 3
             charindex2 = this.charToIndex(c)
-            this.displayDigits[pos] = characterBytes[charindex2] | 128
-            this.sendPair(digitAddress[pos], this.displayDigits[pos])
+            this.displayDigitsRaw[pos] = characterBytes[charindex2] | 128
+            this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
         public showString(s: string) {
             let outc: number[] = []
@@ -131,18 +136,18 @@ namespace tm1650Display {
                 this.showString("Err ")
             } else {
                 for( j = 0 ; j < 3 ; j++ ) {
-                    this.displayDigits[j] = 0
+                    this.displayDigitsRaw[j] = 0
                 }
-                this.displayDigits[3] = characterBytes[0]
+                this.displayDigitsRaw[3] = characterBytes[0]
                 if (n < 0) {
                     n = 0x10000 + n
                 }
                for( j = 3 ; (n != 0) ; j-- ) {
-                    this.displayDigits[j] = characterBytes[n & 15]
+                    this.displayDigitsRaw[j] = characterBytes[n & 15]
                     n >>= 4
                 }
                 for (j = 0; j < 4; j++) {
-                    this.sendPair(digitAddress[j], this.displayDigits[j])
+                    this.sendPair(digitAddress[j], this.displayDigitsRaw[j])
                 }
             }
         }
@@ -164,10 +169,53 @@ namespace tm1650Display {
             }
         }
         public toggleDP(pos: number = 0) {
-            this.displayDigits[pos] ^= 128
-            this.sendPair(digitAddress[pos], this.displayDigits[pos])
+            this.displayDigitsRaw[pos] ^= 128
+            this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
-
+        public digitRaw(pos : number = 0){
+            return this.displayDigitsRaw[pos & 3]
+        }
+        public digitChar(pos: number = 0){
+            let raw=this.displayDigitsRaw[pos&3]
+            let c = 0
+            let found = 0
+            let i = 0
+            if(raw == 0){
+                c = 32
+            }
+            while( (i < 30) && ( found == 0) ){
+                if( characterBytes[i] == raw) {
+                    found = 1
+                    if(i < 10){ 
+                        c = 0x30 + i
+                    } else {
+                        if( i < 20 ) {
+                            c = 55 + i
+                        } else {
+                            c = 77
+                            if( i > 20 ) {
+                                c = c + ( i - 19 )
+                                if( i > 25 ){ 
+                                    c = c + 1
+                                    if( i == 28 ) {
+                                        c = 0x2d
+                                    }
+                                    if( i == 29 ) {
+                                        c = 0x2a
+                                    }
+                                    if( i == 128 ) {
+                                        c = 0x2e
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    i++
+                }
+            }
+            return c
+        }
         private clockPin: DigitalPin = DigitalPin.P1
         private dataPin: DigitalPin = DigitalPin.P0
         private pulseWidth: number = 120
@@ -306,7 +354,7 @@ namespace tm1650Display {
     }
 
     //% help=tm1650Display/displayOn tm1650Display weight=55
-    //% blockId=TM1650_display_on block="TM1650 turn on display|named %name|at brightness %brightness"
+    //% blockId=TM1650_displayOn block="TM1650 turn on display|named %name|at brightness %brightness"
     //% name.defl="display1"
     //% brightness.min=0 brightness.max=7 brightness.defl=5
     //% parts="TM1650"
@@ -404,5 +452,29 @@ namespace tm1650Display {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].setSpeed( baud )
         }
+    }
+
+    //% help=tm1650Display/digitRaw tm1650Display weight=20
+    //% blockId=tm1650Display_digitRaw block="TM1650 get raw segment code for |digit %pos"
+    //% pos.min=0 pos.max=3 pos.defl=0
+    //% parts="TM1650"
+    export function digitRaw( pos: number = 0 ){
+        let c = 0
+        if (instanceCount > 0) {
+            c = instances[currentInstanceIndex].digitRaw(pos)
+        }
+        return c
+    }
+
+    //% help=tm1650Display/digitChar tm1650Display weight=19
+    //% blockId=tm1650Display_digitChar block="TM1650 get char at|digit %pos"
+    //% pos.min=0 pos.max=3 pos.defl=0
+    //% parts="TM1650"
+    export function digitChar(pos: number = 0 ){
+        let c = 0
+        if (instanceCount > 0) {
+            c = instances[currentInstanceIndex].digitChar(pos)
+        }
+        return c
     }
 }
