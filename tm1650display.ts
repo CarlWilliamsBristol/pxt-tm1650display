@@ -26,8 +26,8 @@ namespace tm1650Display {
             this.clockPin = clock
             this.dataPin = data
             this.goIdle()
-            this.sendStart()
-            this.goIdle()
+            this.displayOff()
+            this.displayClear()
         }
         public displayOn(brightness: number = 0) {
             this.goIdle()
