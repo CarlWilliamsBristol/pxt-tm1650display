@@ -1,5 +1,7 @@
 # MakeCode
 built
+main.ts
+main.blocks
 node_modules
 yotta_modules
 yotta_targets
