@@ -306,7 +306,7 @@ namespace tm1650Display {
     }
 
     //% help=tm1650Display/displayOn tm1650Display weight=55
-    //% blockId=TM1650_displayOn block="TM1650 turn on display|named %name|at brightness %brightness"
+    //% blockId=TM1650_display_on block="TM1650 turn on display|named %name|at brightness %brightness"
     //% name.defl="display1"
     //% brightness.min=0 brightness.max=7 brightness.defl=5
     //% parts="TM1650"
