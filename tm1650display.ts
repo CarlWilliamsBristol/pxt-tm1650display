@@ -1,66 +1,67 @@
 //% weight=100 color=#5C2D91 icon="\uf26c"
-namespace tm1650display {
-    const chargen: number[] = [
+namespace tm1650Display {
+    const characterBytes: number[] = [
         0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F,  /* 0 - 9 */
         0x77, 0x7C, 0x39, 0x5E, 0x79, 0x71, 0x3D, 0x76, 0x06, 0x0E,  /* A - J */
         0x38, 0x54, 0x74, 0x73, 0x67, 0x50, 0x78, 0x1C, 0x40, 0x63,  /* LnoPQrtu-* (degree) */
         0x00]
-    const digaddress: number[] = [0x68, 0x6A, 0x6C, 0x6E]
-    class instanceClass {
+    const digitAddress: number[] = [0x68, 0x6A, 0x6C, 0x6E]
+
+    class Tm1650DisplayClass {
         public displayDigits: number[] = [0, 0, 0, 0]
 
         constructor(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
-            this.setSpeed( 2000 )
+            this.setSpeed( 4000 )
             this.reconfigure( clock, data )
         }
-        public setSpeed( baud : number = 2000 ){
-            let clocklength = 1000000 / baud   /* microseconds per clock */
-            if(clocklength > 10) {
-                this.pulsewidth = clocklength / 2
-                this.halfpulsewidth = clocklength / 4
-                this.shortdelay = clocklength / 10
+        public setSpeed( baud : number = 4000 ){
+            let clockLength = 1000000 / baud   /* microseconds per clock */
+            if(clockLength > 10) {
+                this.pulseWidth = clockLength / 2
+                this.halfPulseWidth = clockLength / 4
+                this.shortDelay = clockLength / 10
             }
         }
         public reconfigure(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
-            this.clockpin = clock
-            this.datapin = data
-            this.goidle()
-            this.sendstart()
-            this.goidle()
+            this.clockPin = clock
+            this.dataPin = data
+            this.goIdle()
+            this.sendStart()
+            this.goIdle()
         }
         public displayOn(brightness: number = 0) {
-            this.goidle()
+            this.goIdle()
             brightness &= 7
             brightness <<= 4
             brightness |= 1
-            this.sendpair(0x48, brightness)
+            this.sendPair(0x48, brightness)
         }
         public displayOff() {
-            this.sendpair(0x48, 0)
+            this.sendPair(0x48, 0)
         }
         public displayClear() {
             for( let i = 0 ; i < 4 ; i++ ) {
-                this.sendpair(digaddress[i], 0)
+                this.sendPair(digitAddress[i], 0)
                 this.displayDigits[i] = 0
             }
         }
         public showChar(pos: number = 0, c: number = 0) {
             let charindex = 30
             pos &= 3
-            charindex = this.chartoindex(c)
+            charindex = this.charToIndex(c)
             if (c == 0x2E) {
                 this.displayDigits[pos] |= 128
             } else {
-                this.displayDigits[pos] = chargen[charindex]
+                this.displayDigits[pos] = characterBytes[charindex]
             }
-            this.sendpair(digaddress[pos], this.displayDigits[pos])
+            this.sendPair(digitAddress[pos], this.displayDigits[pos])
         }
         public showCharWithPoint(pos: number = 0, c: number = 0) {
             let charindex2 = 30
             pos &= 3
-            charindex2 = this.chartoindex(c)
-            this.displayDigits[pos] = chargen[charindex2] | 128
-            this.sendpair(digaddress[pos], this.displayDigits[pos])
+            charindex2 = this.charToIndex(c)
+            this.displayDigits[pos] = characterBytes[charindex2] | 128
+            this.sendPair(digitAddress[pos], this.displayDigits[pos])
         }
         public showString(s: string) {
             let outc: number[] = []
@@ -135,16 +136,16 @@ namespace tm1650display {
                 for( j = 0 ; j < 3 ; j++ ) {
                     this.displayDigits[j] = 0
                 }
-                this.displayDigits[3] = chargen[0]
+                this.displayDigits[3] = characterBytes[0]
                 if (n < 0) {
                     n = 0x10000 + n
                 }
                for( j = 3 ; (n != 0) ; j-- ) {
-                    this.displayDigits[j] = chargen[n & 15]
+                    this.displayDigits[j] = characterBytes[n & 15]
                     n >>= 4
                 }
                 for (j = 0; j < 4; j++) {
-                    this.sendpair(digaddress[j], this.displayDigits[j])
+                    this.sendPair(digitAddress[j], this.displayDigits[j])
                 }
             }
         }
@@ -167,115 +168,117 @@ namespace tm1650display {
         }
         public toggleDP(pos: number = 0) {
             this.displayDigits[pos] ^= 128
-            this.sendpair(digaddress[pos], this.displayDigits[pos])
+            this.sendPair(digitAddress[pos], this.displayDigits[pos])
         }
 
-        private clockpin: DigitalPin
-        private datapin: DigitalPin
-        private pulsewidth: number 
-        private halfpulsewidth: number
-        private shortdelay: number
-        private chartoindex(c: number) {
-            let charcode = 30
+        private clockPin: DigitalPin
+        private dataPin: DigitalPin
+        private pulseWidth: number 
+        private halfPulseWidth: number
+        private shortDelay: number
+        private charToIndex(c: number) {
+            let charCode = 30
             if (c < 30) {
-                charcode = c
+                charCode = c
             } else {
                 if ((c > 0x2F) && (c < 0x3A)) {
-                    charcode = c - 0x30
+                    charCode = c - 0x30
                 } else {
                     if (c > 0x40) {
                         c &= 0xDF    /* uppercase */
                     }
                     if ((c > 0x40) && (c < 0x4B)) {
-                        charcode = c - 0x37
+                        charCode = c - 0x37
                     } else {
                         if (c == 0x4C) {
-                            charcode = 20
+                            charCode = 20
                         }
                         if ((c >= 0x4E) && (c <= 0x52)) {
-                            charcode = 21 + (c - 0x4E)
+                            charCode = 21 + (c - 0x4E)
                         }
                         if (c == 0x54) {
-                            charcode = 26
+                            charCode = 26
                         }
                         if (c == 0x55) {
-                            charcode = 27
+                            charCode = 27
                         }
                         if (c == 0x2D) {
-                            charcode = 28
+                            charCode = 28
                         }
                         if (c == 0x2A) {
-                            charcode = 29
+                            charCode = 29
                         }
                     }
                 }
             }
-            return (charcode)
+            return (charCode)
         }
-        private sendpair(byte1: number, byte2: number) {
-            this.sendstart()
-            this.sendbyte(byte1)
-            this.sendbyte(byte2)
-            this.goidle()
+        private sendPair(byte1: number, byte2: number) {
+            this.sendStart()
+            this.sendByte(byte1)
+            this.sendByte(byte2)
+            this.goIdle()
         }
-        private sendstart() {
+        private sendStart() {
             /* Clock and data both start at 1 */
-            pins.digitalWritePin(this.datapin, 0)
-            control.waitMicros(this.pulsewidth)
-            pins.digitalWritePin(this.clockpin, 0)
-            control.waitMicros(this.shortdelay)
+            pins.digitalWritePin(this.dataPin, 0)
+            control.waitMicros(this.pulseWidth)
+            pins.digitalWritePin(this.clockPin, 0)
+            control.waitMicros(this.shortDelay)
         }
-        private goidle() {
-            pins.digitalWritePin(this.clockpin, 1)
-            control.waitMicros(this.pulsewidth)
-            pins.digitalWritePin(this.datapin, 1)
-            control.waitMicros(this.pulsewidth)
+        private goIdle() {
+            pins.digitalWritePin(this.clockPin, 1)
+            control.waitMicros(this.pulseWidth)
+            pins.digitalWritePin(this.dataPin, 1)
+            control.waitMicros(this.pulseWidth)
         }
-        private sendbyte(byte: number) {
-            /* Resting is both clock and data HIGH. */
-            /* In here, clock will start and end LOW, SDA unknown */
-            /* data are clocked out MSB first, 8 bits and then an incoming ACK bit */
-            let bitmask = 128
-            let ackbit = 0
+        private sendByte(byte: number) {
+            /* The idle state has both clock (SCL) and data (SDA) HIGH.     */
+            /* In this function, SCL will start and end LOW, SDA unknown    */
+            /* Data are clocked out MSB first. 8 bits are clocked out,      */ 
+            /* latched by the display on the falling edge of SCL. A final   */
+            /* ninth clock is sent to allow the display to send an ACK bit. */
+            let bitMask = 128
+            let ackBit = 0      /* Debug only - discarded */
 
-            while (bitmask != 0) {
-                control.waitMicros(this.halfpulsewidth)
-                if ((byte & bitmask) == 0) {
-                    pins.digitalWritePin(this.datapin, 0)
+            while (bitMask != 0) {
+                control.waitMicros(this.halfPulseWidth)
+                if ((byte & bitMask) == 0) {
+                    pins.digitalWritePin(this.dataPin, 0)
                 } else {
-                    pins.digitalWritePin(this.datapin, 1)
+                    pins.digitalWritePin(this.dataPin, 1)
                 }
-                control.waitMicros(this.halfpulsewidth)
-                pins.digitalWritePin(this.clockpin, 1)
-                control.waitMicros(this.pulsewidth)
-                pins.digitalWritePin(this.clockpin, 0)
-                bitmask >>= 1
+                control.waitMicros(this.halfPulseWidth)
+                pins.digitalWritePin(this.clockPin, 1)
+                control.waitMicros(this.pulseWidth)
+                pins.digitalWritePin(this.clockPin, 0)
+                bitMask >>= 1
             }
             /* Clock is now low and we want the ACK bit so this time read SDA */
             /* SDA is unknown, give a brief delay then drop data to zero */
-            control.waitMicros(this.shortdelay)
-            pins.digitalWritePin(this.datapin, 0)
-            control.waitMicros(this.pulsewidth)
+            control.waitMicros(this.shortDelay)
+            pins.digitalWritePin(this.dataPin, 0)
+            control.waitMicros(this.pulseWidth)
             /* Do one clock */
-            pins.digitalWritePin(this.clockpin, 1)
-            control.waitMicros(this.pulsewidth)
-            pins.digitalWritePin(this.clockpin, 0)
+            pins.digitalWritePin(this.clockPin, 1)
+            control.waitMicros(this.pulseWidth)
+            pins.digitalWritePin(this.clockPin, 0)
             /* Display takes 120+ microseconds to send ack */
-            control.waitMicros(this.halfpulsewidth + this.shortdelay)
-            ackbit = pins.digitalReadPin(this.datapin)
-            pins.digitalWritePin(this.datapin, 0)
-            control.waitMicros(this.halfpulsewidth)
+            control.waitMicros(this.halfPulseWidth + this.shortDelay)
+            ackBit = pins.digitalReadPin(this.dataPin)
+            pins.digitalWritePin(this.dataPin, 0)
+            control.waitMicros(this.halfPulseWidth)
         }
     }
     let instanceNames: string[] = []
-    let instancecount: number = 0
-    let instances: instanceClass[] = []
+    let instanceCount: number = 0
+    let instances: Tm1650DisplayClass[] = []
     let currentInstanceIndex: number = 0;
 
-    function getInstanceIndex(name: string) {
+    function findInstanceIndex(name: string) {
         let found = 0;
         let i = 0;
-        for (i = 0; (found == 0) && i < instancecount; ++i) {
+        for (i = 0; (found == 0) && i < instanceCount; ++i) {
             if (instanceNames[i] == name) {
                 found = 1
             }
@@ -283,93 +286,93 @@ namespace tm1650display {
         return i
     }
 
-    //% help=TM1650Display/displayOn TM1650Display weight=65
-    //% blockId=TM1650_display_configure block="Configure a TM1650 display|named %name| with clock %scl|data %sda"
+    //% help=tm1650Display/configure tm1650Display weight=65
+    //% blockId=TM1650_configure block="Configure a TM1650 display|named %name| with clock %scl|data %sda"
     //% parts = "TM1650"
     export function configure(name: string = "display1", scl:DigitalPin = DigitalPin.P1, sda:DigitalPin = DigitalPin.P0 ) {
         let index: number = 0
 
-        index = getInstanceIndex(name)
-        if (index == instancecount) {
-            instanceNames[instancecount] = name;
-            instances[instancecount] = new instanceClass(scl, sda)
+        index = findInstanceIndex(name)
+        if (index == instanceCount) {
+            instanceNames[instanceCount] = name;
+            instances[instanceCount] = new Tm1650DisplayClass(scl, sda)
             currentInstanceIndex = index
-            instancecount++
+            instanceCount++
         } else {
             instances[index].reconfigure(scl, sda)
             currentInstanceIndex = index
         }
     }
 
-    //% help=TM1650Display/displayOn TM1650Display weight=55
-    //% blockId=TM1650_display_on block="TM1650 turn on display|named %name|at brightness %brightness"
+    //% help=tm1650Display/displayOn tm1650Display weight=55
+    //% blockId=TM1650_displayOn block="TM1650 turn on display|named %name|at brightness %brightness"
     //% parts="TM1650"
-    export function displayOn(name: string = "TM1650Display1", brightness: number = 0) {
-        let index: number = getInstanceIndex(name)
-        if (index != instancecount) {
+    export function displayOn(name: string = "display1", brightness: number = 0) {
+        let index: number = findInstanceIndex(name)
+        if (index != instanceCount) {
             currentInstanceIndex = index
             instances[currentInstanceIndex].displayOn(brightness)
         }
     }
 
-    //% help=TM1650Display/displayOff TM1650Display weight=54
-    //% blockId=TM1650_display_off block="TM1650 turn display off"
+    //% help=tm1650Display/displayOff tm1650Display weight=54
+    //% blockId=TM1650_displayOff block="TM1650 turn display off"
     //% parts="TM1650"
     export function displayOff() {
         instances[currentInstanceIndex].displayOff()
     }
 
-    //% help=TM1650Display/displayClear TM1650Display weight=53
-    //% blockId=TM1650_display_clear block="TM1650 clear display"
+    //% help=tm1650Display/displayClear tm1650Display weight=53
+    //% blockId=TM1650_displayClear block="TM1650 clear display"
     //% parts="TM1650"
     export function displayClear() {
         instances[currentInstanceIndex].displayClear()
     }
 
-    //% help=TM1650Display/showChar TM1650Display weight=50
-    //% blockId=TM1650Display_showChar block="TM1650 display character|position %pos|char %c"
+    //% help=tm1650Display/showChar tm1650Display weight=50
+    //% blockId=tm1650Display_showChar block="TM1650 display character|position %pos|char %c"
     //% parts="TM1650"
     export function showChar(pos: number = 0, c: number = 0) {
         instances[currentInstanceIndex].showChar(pos, c)
     }
 
-    //% help=TM1650Display/showInteger TM1650Display weight=39
-    //% blockId=TM1650Display_showInteger block="TM1650 display integer|%n"
+    //% help=tm1650Display/showInteger tm1650Display weight=39
+    //% blockId=tm1650Display_showInteger block="TM1650 display integer|%n"
     //% parts="TM1650"
     export function showInteger(n: number = 0) {
         instances[currentInstanceIndex].showInteger(n)
     }
 
-    //% help=TM1650Display/showDecimal TM1650Display weight=40
-    //% blockId=TM1650Display_showDecimal block="TM1650 display decimal number|%n"
+    //% help=tm1650Display/showDecimal tm1650Display weight=40
+    //% blockId=tm1650Display_showDecimal block="TM1650 display decimal number|%n"
     //% parts="TM1650"
     export function showDecimal(n: number = 0) {
         instances[currentInstanceIndex].showDecimal(n)
     }
 
-    //% help=TM1650Display/showHex TM1650Display weight=38
-    //% blockId=TM1650Display_showHex block="TM1650 display hex number|%n"
+    //% help=tm1650Display/showHex tm1650Display weight=38
+    //% blockId=tm1650Display_showHex block="TM1650 display hex number|%n"
     //% parts="TM1650"
     export function showHex(n: number = 0) {
         instances[currentInstanceIndex].showHex(n)
     }
 
-    //% help=TM1650Display/toggleDP TM1650Display weight=38
-    //% blockId=TM1650Display_toggleDP block="TM1650 toggle decimal point at|digit %pos"
+    //% help=tm1650Display/toggleDP tm1650Display weight=38
+    //% blockId=tm1650Display_toggleDP block="TM1650 toggle decimal point at|digit %pos"
     //% parts="TM1650"
     export function toggleDP(pos: number = 0){
         instances[currentInstanceIndex].toggleDP(pos)
     }
 
-    //% help=TM1650Display/showString TM1650Display weight=45
-    //% blockId=TM1650Display_showString block="TM1650 display string|%s"
+    //% help=tm1650Display/showString tm1650Display weight=45
+    //% blockId=tm1650Display_showString block="TM1650 display string|%s"
     //% parts="TM1650"
     export function showString(s: string = "    ") {
         instances[currentInstanceIndex].showString(s)
     }
 
-    //% help=TM1650Display/setSpeed TM1650Display weight=25
-    //% blockId=TM1650Display_showString block="TM1650 change interface speed|baud %baud"
+    //% help=tm1650Display/setSpeed tm1650Display weight=25
+    //% blockId=tm1650Display_setSpeed block="TM1650 change interface speed|baud %baud"
     //% parts="TM1650"
     export function setSpeed( baud : number = 2000 ){
          instances[currentInstanceIndex].setSpeed( baud )
