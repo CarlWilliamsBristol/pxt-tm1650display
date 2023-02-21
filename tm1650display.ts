@@ -19,8 +19,8 @@ namespace tm1650Display {
                 this.pulseWidth = Math.floor(clockLength / 2)
                 this.halfPulseWidth = Math.floor(clockLength / 4)
                 this.shortDelay = Math.floor(clockLength / 10)
-                if(this.shortdelay == 0){
-                    this.shortdelay = Math.floor(clocklength / 5)
+                if(this.shortDelay == 0){
+                    this.shortDelay = Math.floor(clockLength / 5)
                 }
             }
         }
