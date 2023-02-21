@@ -2,7 +2,7 @@
 
 This is a BBC micro:bit MakeCode extension and class to drive 4-digit 7-segment LED display based on the Titan Micro Electronics TM1650 chip. Written for and tested with a "Gravity" branded unit from PiHut, see: https://thepihut.com/products/gravity-4-digit-red-seven-segment-led-display-module. 
 
-**Note:** I have no affiliation with, or sposorship from, either the PiHut or Titan Micro Electronics. The timing diagram below is excerpted and modified from the Titanmec datasheet under fair use guidelines.
+**Note:** I have no affiliation with, or sposorship from, either the PiHut, Titan Micro Electronics or Gravity. The timing diagram below is excerpted and modified from the Titanmec datasheet under fair use guidelines. All trademarks are acknowledged.
 
 Displays based on this or similar chips are available from various "maker" stores and they tend to be cheaper than typical I2C display modules. Display modules that include push-buttons are also available, but this extension does not support reading back push-button values from the TM1650 (although it could readily be extended to do so). 
 
