@@ -581,9 +581,9 @@ namespace tm1650Display {
     }
 
     /**
-     * Read the character at a given position on the currently selected tm1650 based display.
+     * Read the character code at a given position on the currently selected tm1650 based display.
      * This doesn't query the display, but rather a host buffer, and it interprets the raw segment 
-     * pattern so it has some quirks. The characters supported are the same as for writing, except
+     * pattern, so it has some quirks. The characters supported are the same as for writing, except
      * that an I or 1 will always return a digit 1, an O or 0 will return a digit 0, and so on.
      * Blank digits and unrecognised segment patterns are returned as zero, so zero doesn't 
      * necessarily mean that the digit in question is blank. 
@@ -599,5 +599,32 @@ namespace tm1650Display {
             c = instances[currentInstanceIndex].digitChar(pos)
         }
         return c
+    }
+
+    /**
+     * Read the display digits for the currently selected tm1650 based display.
+     * This doesn't query the display, but rather a host buffer, and it interprets the raw segment 
+     * pattern, so it has some quirks. The characters supported are the same as for writing, except
+     * that an I or 1 will always return a digit 1, an O or 0 will return a digit 0, and so on.
+     * Blank digits and unrecognised segment patterns are returned as spaces, so a space doesn't 
+     * necessarily mean that the digit in question is actually blank. Returns a 4 character string.
+     */
+    //% help=tm1650Display/digits tm1650Display weight=19
+    //% blockId=tm1650Display_digits block="TM1650 get char at|digit %pos"
+    //% pos.min=0 pos.max=3 pos.defl=0
+    //% parts="TM1650"
+    export function digits(): string {
+        let s : string = ""
+        let c : number = 0
+        if (instanceCount > 0) {
+            for( let p = 0 ; p < 4 ; p++ ){
+                c = instances[currentInstanceIndex].digitChar(p)
+                if( c == 0 ){ 
+                    c = 32 
+                }
+                s = s + String.fromCharCode(c)
+            }  
+        }
+        return s
     }
 }
