@@ -342,6 +342,14 @@ namespace tm1650Display {
         return i
     }
 
+    /**
+     * Configure a tm1650 based 4-digit 7-segment LED display using the given pins for clock and data.
+     * You can have multiple tm1650 displays but they cannot share clock and data lines.
+     * The display configured will become the currently selected display.
+     * @param a name for the display
+     * @param scl the pin to use for the clock signal to the display
+     * @param sda the pin to use for the data signal to the display
+     */
     //% help=tm1650Display/configure tm1650Display weight=65
     //% blockId=TM1650_configure block="Configure a TM1650 display|named %name| with clock %scl|data %sda"
     //% name.defl="display1" scl.defl=DigitalPin.P1 sda.defl=DigitalPin.P0
@@ -361,6 +369,14 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Turn on a tm1650 based 4-digit 7-segment LED display.
+     * A display needs to have been configured with the given name
+     * The named display will become the currently selected display.
+     * Can use this multiple times to select different brightnesses and to change the currently selected display.
+     * @param The name of a configured display
+     * @param The brightness of the display, 1 to 7 or 0 for maximum.
+     */
     //% help=tm1650Display/displayOn tm1650Display weight=55
     //% blockId=TM1650_displayOn block="TM1650 turn on display|named %name|at brightness %brightness"
     //% name.defl="display1"
@@ -374,6 +390,11 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Turn off a tm1650 based 4-digit 7-segment LED display.
+     * Does not change the currently selected display (see displayOn() for that.)
+     * @param The name of a configured display
+     */
     //% help=tm1650Display/displayOff tm1650Display weight=54
     //% blockId=TM1650_displayOff block="TM1650 turn display off"
     //% parts="TM1650"
@@ -383,6 +404,9 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Clear the currently selected tm1650 based display.
+     */
     //% help=tm1650Display/displayClear tm1650Display weight=53
     //% blockId=TM1650_displayClear block="TM1650 clear display"
     //% parts="TM1650"
@@ -392,6 +416,15 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Show a character on the currently selected tm1650 based LED display.
+     * Supports space, .-*, digits 0-9, letters A-J plus L,n,o,p,q,r,t,u
+     * Asterisk shows as a superscipt o or degree sign. Number 0 can be used
+     * for a large O, letter O renders as a small o. Number 5 can be used For
+     * letter S.
+     * @param The digit position to write to, 0 to 3, 0 is the leftmost.
+     * @param The character to show, [ .-*01234567890ABCDEFGHIJLnopqrtu]
+     */
     //% help=tm1650Display/showChar tm1650Display weight=50
     //% blockId=tm1650Display_showChar block="TM1650 display character|position %pos|char %c"
     //% pos.min=0 pos.max=3 pos.defl=0 c.min=0 c.max=255 c.defl=0x30
@@ -402,6 +435,31 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Show an arbitrary segment pattern on the currently selected tm1650 based LED display.
+     * Segments are designated A to G plus DP for the decimal point. The top segment is
+     * A, then they proceed clockwise around the display to F upper left, with G in the middle.
+     * The Segment patterm is mapped to bits with bit 0 = A, bit 1 = B etc.
+     * Decimal point is bit 7.
+     * @param The digit position to write to, 0 to 3, 0 is the leftmost.
+     * @param The bit pattern to show (lowest 8 bits map to segments)
+     */
+    //% help=tm1650Display/showSegments tm1650Display weight=50
+    //% blockId=tm1650Display_showSegments block="TM1650 display segment pattern|position %pos|pattern %pattern"
+    //% pos.min=0 pos.max=3 pos.defl=0 c.min=0 c.max=255 c.defl=0x30
+    //% parts="TM1650"
+    export function showSegments(pos: number = 0, pattern: number = 0) : void {
+        if (instanceCount > 0) {
+            instances[currentInstanceIndex].showSegments(pos, pattern)
+        }
+    }
+
+    /**
+     * Show an integer number on the currently selected tm1650 based LED display.
+     * Numbers larger than 9999 or smaller than -999 are ignored as they won't
+     * fit in the available digits.
+     * @param The number to display
+     */
     //% help=tm1650Display/showInteger tm1650Display weight=39
     //% blockId=tm1650Display_showInteger block="TM1650 display integer|%n"
     //% n.min=-999 n.max=9999 n.defl=0
@@ -412,6 +470,13 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Show a decimal number on the currently selected tm1650 based LED display.
+     * Numbers larger than 9999 or smaller than -999 are ignored as they won't
+     * fit in the available digits. Decimal places that won't fit are omitted.
+     * Numbers are right-justified and leading zeros are blanked.
+     * @param The number to display
+     */
     //% help=tm1650Display/showDecimal tm1650Display weight=40
     //% blockId=tm1650Display_showDecimal block="TM1650 display decimal number|%n"
     //% n.min=-999 n.max=9999 n.defl=0
@@ -422,6 +487,13 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Show a hexadecimal number on the currently selected tm1650 based LED display.
+     * Numbers larger than 65535 (0xFFFF) or smaller than -32768 are ignored as they won't
+     * fit in the available digits. Negative numbers show as positive two's complement. 
+     * Numbers are right-justified and leading zeros are blanked.
+     * @param The number to display in hexadecimal
+     */
     //% help=tm1650Display/showHex tm1650Display weight=38
     //% blockId=tm1650Display_showHex block="TM1650 display hex number|%n"
     //% n.min=-32768 n.max=65535 n.defl=0
@@ -432,6 +504,10 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Toggle the decimal point for a digit on the currently selected tm1650 based display.
+     * @param digit position, 0 to 3. 0 is left-most digit.
+     */
     //% help=tm1650Display/toggleDP tm1650Display weight=38
     //% blockId=tm1650Display_toggleDP block="TM1650 toggle decimal point at|digit %pos"
     //% pos.min=0 pos.max=3 pos.defl=0
@@ -442,6 +518,18 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Display, as far as possible, the given string on the currenly selected tm1650 based display.
+     * Characters supported are space and [.-*01234567890ABCDEFGHIJLnopqrtu]. 
+     * Decimal points or full stops appearing to the right of a character will be combined into 
+     * that character's digit on the display. Asterisk renders as a superscript o or ordinal/degree symbol.
+     * Letter o gets a small o, number zero can be used for a large O. Number 5 can be used for letter S. 
+     * Letter I renders the same as digit 1. Number 2 can be used for Z. There is no lower-case h. 
+     * Strings are displayed left justified and truncated to 4 display digits, which might include one or 
+     * more decimal points. Leading or consecutive decimal points will consume display digits, otherwise
+     * they combine with other characters. 
+     * @param the string to display 
+     */
     //% help=tm1650Display/showString tm1650Display weight=45
     //% blockId=tm1650Display_showString block="TM1650 display string|%s"
     //% s.defl="HEL0"
@@ -452,6 +540,18 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Set the approximate bit rate of the serial communication with the currently selected tm1650 based display.
+     * This becomes less accurate as the speed increases because of general overheads in the "bit-banged" transmission method.
+     * The display is clocked synchronously from the host and supports arbitrary speeds, there is no need to pick "standard"
+     * baud rates like 9600 or 19200. Anything much above 100,000 baud uses minimum delays in parts of the transmission and
+     * there's no particular practical increase in speed up to the maximum which is nominally 200kbps. Actual throughput
+     * is always somewhat lower because of extra bits and inter-byte delays. These displays appear to work OK up to 
+     * the maximum, and speed can be changed at any time after a display is configured, faster or slower, it should still work.
+     * It takes at most 8 bytes to update the whole display, roughly 80 bits, so for most purposes any speed from about 2000 bits/sec is fine,
+     * it's still a great deal faster than showing numbers on the micro:bit LED arrray. For longer wires in noisy environments, pick lower speeds.
+     * @param the desired approximate baud rate, bits per second.
+     */
     //% help=tm1650Display/setSpeed tm1650Display weight=25
     //% blockId=tm1650Display_setSpeed block="TM1650 change interface speed|baud %baud"
     //% baud.min=200 baud.max=200000 baud.defl=4000
@@ -462,6 +562,12 @@ namespace tm1650Display {
         }
     }
 
+    /**
+     * Read the raw segment data for the digit at a given position on the currently selected tm1650 based display. 
+     * This doesn't query the display, but rather a host buffer. The number returned has bits set corresponding to 
+     * the segments that are turned on, bit 0 = segment A, bit 1 segment B, etc. with bit 7 as the decimal point.
+     * @param the digit number, 0 to 3 (0 is the leftmost digit)
+     */
     //% help=tm1650Display/digitRaw tm1650Display weight=20
     //% blockId=tm1650Display_digitRaw block="TM1650 get raw segment code for |digit %pos"
     //% pos.min=0 pos.max=3 pos.defl=0
@@ -474,6 +580,15 @@ namespace tm1650Display {
         return c
     }
 
+    /**
+     * Read the character at a given position on the currently selected tm1650 based display.
+     * This doesn't query the display, but rather a host buffer, and it interprets the raw segment 
+     * pattern so it has some quirks. The characters supported are the same as for writing, except
+     * that an I or 1 will always return a digit 1, an O or 0 will return a digit 0, and so on.
+     * Blank digits and unrecognised segment patterns are returned as zero, so zero doesn't 
+     * necessarily mean that the digit in question is blank. 
+     * @param the digit number, 0 to 3 (0 is the leftmost digit)
+     */
     //% help=tm1650Display/digitChar tm1650Display weight=19
     //% blockId=tm1650Display_digitChar block="TM1650 get char at|digit %pos"
     //% pos.min=0 pos.max=3 pos.defl=0
