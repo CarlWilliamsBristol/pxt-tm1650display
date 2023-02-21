@@ -13,44 +13,49 @@ namespace tm1650Display {
         constructor(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
             this.reconfigure(clock, data)
         }
-        public setSpeed( baud : number = 4166 ){
-            let clockLength = 1000000 / baud   /* microseconds per clock */
-            if(clockLength >= 5) {
+        public setSpeed( baud : number = 4166 ) : void {
+            /* baud = microseconds per bit, clockLength - clock pulse width */
+            let clockLength = 500000 / baud
+            if(clockLength >= 4) {
                 this.pulseWidth = Math.floor(clockLength / 2)
                 this.halfPulseWidth = Math.floor(clockLength / 4)
                 this.shortDelay = Math.floor(clockLength / 10)
                 if(this.shortDelay == 0){
                     this.shortDelay = Math.floor(clockLength / 5)
                 }
+            } else {
+                this.pulseWidth = 1
+                this.halfPulseWidth = 0
+                this.shortDelay = 0
             }
         }
-        public reconfigure(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {    
+        public reconfigure(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) : void {    
             this.clockPin = clock
             this.dataPin = data
             this.goIdle()
         }
-        public displayOn(brightness: number = 0) {
+        public displayOn(brightness: number = 0) : void {
             this.goIdle()
             brightness &= 7
             brightness <<= 4
             brightness |= 1
             this.sendPair(0x48, brightness)
         }
-        public displayOff() {
+        public displayOff() : void {
             this.sendPair(0x48, 0)
         }
-        public displayClear() {
+        public displayClear() : void {
             for( let i = 0 ; i < 4 ; i++ ) {
                 this.sendPair(digitAddress[i], 0)
                 this.displayDigitsRaw[i] = 0
             }
         }
-        public showSegments(pos: number = 0, pattern: number = 0){
+        public showSegments(pos: number = 0, pattern: number = 0) : void {
             pos &= 3
             this.displayDigitsRaw[pos] = pattern
             this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
-        public showChar(pos: number = 0, c: number = 0) {
+        public showChar(pos: number = 0, c: number = 0) : void {
             let charindex = 30
             pos &= 3
             charindex = this.charToIndex(c)
@@ -61,14 +66,14 @@ namespace tm1650Display {
             }
             this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
-        public showCharWithPoint(pos: number = 0, c: number = 0) {
+        public showCharWithPoint(pos: number = 0, c: number = 0) : void {
             let charindex2 = 30
             pos &= 3
             charindex2 = this.charToIndex(c)
             this.displayDigitsRaw[pos] = characterBytes[charindex2] | 128
             this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
-        public showString(s: string) {
+        public showString(s: string) : void {
             let outc: number[] = []
             let dp: number[] = [0, 0, 0, 0]
             let c = 0
@@ -106,7 +111,7 @@ namespace tm1650Display {
                 }
             }
         }
-        public showInteger(n: number = 0) {
+        public showInteger(n: number = 0) : void {
             let outc2: number[] = [32, 32, 32, 32]
             let i = 3
             let absn = 0
@@ -132,7 +137,7 @@ namespace tm1650Display {
                 }
             }
         }
-        public showHex(n: number = 0) {
+        public showHex(n: number = 0) : void {
             let j = 3
 
             if ((n > 0xFFFF) || (n < -32768)) {
@@ -154,7 +159,7 @@ namespace tm1650Display {
                 }
             }
         }
-        public showDecimal(n: number = 0) {
+        public showDecimal(n: number = 0) : void {
             let s: string = ""
             let targetlen = 4
 
@@ -171,14 +176,14 @@ namespace tm1650Display {
                 this.showString(s)
             }
         }
-        public toggleDP(pos: number = 0) {
+        public toggleDP(pos: number = 0) : void {
             this.displayDigitsRaw[pos] ^= 128
             this.sendPair(digitAddress[pos], this.displayDigitsRaw[pos])
         }
-        public digitRaw(pos : number = 0){
+        public digitRaw(pos : number = 0) : number {
             return this.displayDigitsRaw[pos & 3]
         }
-        public digitChar(pos: number = 0){
+        public digitChar(pos: number = 0) : number {
             let raw=this.displayDigitsRaw[pos&3]
             let c = 0
             let found = 0
@@ -341,7 +346,7 @@ namespace tm1650Display {
     //% blockId=TM1650_configure block="Configure a TM1650 display|named %name| with clock %scl|data %sda"
     //% name.defl="display1" scl.defl=DigitalPin.P1 sda.defl=DigitalPin.P0
     //% parts = "TM1650"
-    export function configure(name: string = "display1", scl:DigitalPin = DigitalPin.P1, sda:DigitalPin = DigitalPin.P0 ) {
+    export function configure(name: string = "display1", scl:DigitalPin = DigitalPin.P1, sda:DigitalPin = DigitalPin.P0 ) : void {
         let index: number = 0
 
         index = findInstanceIndex(name)
@@ -361,7 +366,7 @@ namespace tm1650Display {
     //% name.defl="display1"
     //% brightness.min=0 brightness.max=7 brightness.defl=5
     //% parts="TM1650"
-    export function displayOn(name: string = "display1", brightness: number = 0) {
+    export function displayOn(name: string = "display1", brightness: number = 0) : void {
         let index: number = findInstanceIndex(name)
         if (index != instanceCount) {
             currentInstanceIndex = index
@@ -372,7 +377,7 @@ namespace tm1650Display {
     //% help=tm1650Display/displayOff tm1650Display weight=54
     //% blockId=TM1650_displayOff block="TM1650 turn display off"
     //% parts="TM1650"
-    export function displayOff() {
+    export function displayOff() : void {
         if(instanceCount > 0){
             instances[currentInstanceIndex].displayOff()
         }
@@ -381,7 +386,7 @@ namespace tm1650Display {
     //% help=tm1650Display/displayClear tm1650Display weight=53
     //% blockId=TM1650_displayClear block="TM1650 clear display"
     //% parts="TM1650"
-    export function displayClear() {
+    export function displayClear() : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].displayClear()
         }
@@ -391,7 +396,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_showChar block="TM1650 display character|position %pos|char %c"
     //% pos.min=0 pos.max=3 pos.defl=0 c.min=0 c.max=255 c.defl=0x30
     //% parts="TM1650"
-    export function showChar(pos: number = 0, c: number = 0) {
+    export function showChar(pos: number = 0, c: number = 0) : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showChar(pos, c)
         }
@@ -401,7 +406,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_showInteger block="TM1650 display integer|%n"
     //% n.min=-999 n.max=9999 n.defl=0
     //% parts="TM1650"
-    export function showInteger(n: number = 0) {
+    export function showInteger(n: number = 0) : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showInteger(n)
         }
@@ -411,7 +416,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_showDecimal block="TM1650 display decimal number|%n"
     //% n.min=-999 n.max=9999 n.defl=0
     //% parts="TM1650"
-    export function showDecimal(n: number = 0) {
+    export function showDecimal(n: number = 0) : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showDecimal(n)
         }
@@ -421,7 +426,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_showHex block="TM1650 display hex number|%n"
     //% n.min=-32768 n.max=65535 n.defl=0
     //% parts="TM1650"
-    export function showHex(n: number = 0) {
+    export function showHex(n: number = 0) : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showHex(n)
         }
@@ -431,7 +436,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_toggleDP block="TM1650 toggle decimal point at|digit %pos"
     //% pos.min=0 pos.max=3 pos.defl=0
     //% parts="TM1650"
-    export function toggleDP(pos: number = 0){
+    export function toggleDP(pos: number = 0) : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].toggleDP(pos)
         }
@@ -441,7 +446,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_showString block="TM1650 display string|%s"
     //% s.defl="HEL0"
     //% parts="TM1650"
-    export function showString(s: string = "HEL0") {
+    export function showString(s: string = "HEL0") : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].showString(s)
         }
@@ -451,7 +456,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_setSpeed block="TM1650 change interface speed|baud %baud"
     //% baud.min=200 baud.max=200000 baud.defl=4000
     //% parts="TM1650"
-    export function setSpeed( baud : number = 4000 ){
+    export function setSpeed( baud : number = 4000 ) : void {
         if(instanceCount > 0){        
             instances[currentInstanceIndex].setSpeed( baud )
         }
@@ -461,7 +466,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_digitRaw block="TM1650 get raw segment code for |digit %pos"
     //% pos.min=0 pos.max=3 pos.defl=0
     //% parts="TM1650"
-    export function digitRaw( pos: number = 0 ){
+    export function digitRaw( pos: number = 0 ) : number {
         let c = 0
         if (instanceCount > 0) {
             c = instances[currentInstanceIndex].digitRaw(pos)
@@ -473,7 +478,7 @@ namespace tm1650Display {
     //% blockId=tm1650Display_digitChar block="TM1650 get char at|digit %pos"
     //% pos.min=0 pos.max=3 pos.defl=0
     //% parts="TM1650"
-    export function digitChar(pos: number = 0 ){
+    export function digitChar(pos: number = 0 ) : number {
         let c = 0
         if (instanceCount > 0) {
             c = instances[currentInstanceIndex].digitChar(pos)
