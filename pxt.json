@@ -8,8 +8,7 @@
     },
     "files": [
         "README.md",
-        "tm1650display.ts",
-        "main.ts"
+        "tm1650display.ts"
     ],
     "testFiles": [
         "test.ts"
