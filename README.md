@@ -1,44 +1,80 @@
-BBC micro:bit class to drive cheap tm1650-based 4-digit 7-segment LED display. Written for and tested with a "Gravity" branded unit from PiHut, see: https://thepihut.com/products/gravity-4-digit-red-seven-segment-led-display-module.
+## TM1650 4-digit 7-segment LED display driver
 
-The TM1650 display/keyboard adapter is a minimalist kind of 2-wire serial interface for simple display plus keyboard modules used in consumer electronics.
+This is a BBC micro:bit MakeCode extension and class to drive 4-digit 7-segment LED display based on the TM1650 chip. Written for and tested with a "Gravity" branded unit from PiHut, see: https://thepihut.com/products/gravity-4-digit-red-seven-segment-led-display-module. Displays based on this or similar chips are available from various "maker" stores and they tend to be cheaper than typical I2C display modules. Display modules that also include push-buttons are available, but this extension does not support reading back push-button values (although it could readily be extended to do so). 
 
-Various "maker" stores sell 4-digit 7-segment LED display units based on this chip or another in the series. The module I have is labeled to suggest that it has an I2C interface, and is noticeably cheaper than other I2C 4-digit displays. But this device isn't quite an I2C interface, and if you hook it up to the I2C lines on a BBC micro:bit, the micro:bit hangs during startup as the display confuses the I2C bus.
+The TM1650 is intended for use in consumer electronics as a single display and push-button interface. It has a 2-wire serial interface clocked by the host that resembles I2C, but isn't. In particular, it has no device ID and it can't share a bus with other devices, not even other TM1650 devices, at least not without some additional hardware to mimic I2C type behaviour. If you hook one of these up to the I2C lines on a BBC micro:bit, the micro:bit hangs during startup because the TM1650 reacts with ACK bits as the micro:bit tries to query/configure other devices on the bus. 
 
-It turns out that this device doesn't have a device address and can't coexist with other devices on an I2C bus, and its transaction protocol is slightly peculiar.
+This extension includes a rudiemntary "bit banged" driver for these displays, written in Typescript. I've lumped everything into a single class that can use any arbitrary pair of GPIOs as clock and data, so multiple displays can be supported on multiple pairs of ports without having to build multiplexing hardware. There are no dependencies on I2C libraries or other stuff. The extension includes pre-defined bit patterns for generating decimal and hex digits and a scattering of other characters, and methods for writing numbers and strings to the display, turning it on and off, changing the brightness, and so on. There's a method for writing raw segment patterns to the display, and methods for reading back display data, albeit from a buffer rather than the display itself.
 
-This is a rudiemntary "bit banged" driver for the display, in Typescript. I've lumped everything into a single class that can use any arbitrary pair of GPIOs as clock and data - there are no dependencies on I2C libraries or other stuff. Includes bit patterns for generating decimal and hex digits and a scatterin of other alphabetic characters and punctuation, and methods for writing numbers and strings to the display, turning it on and off, changing the brightness, and so on.
+It's not the most elegant code, but it does work, it's self contained and the full source is here, so it could be taken and cut down for use in e.g. ATTiny or similar (by getting rid of everything that's not strictly necessary).
 
-It's not the most elegant code, but it does work and it's self contained and the full source is here.
+The display I have appears to work fine at the fastest speed the simple bit-banged approach allows, around 100kbps. A full display update takes only 8 bytes of serial data, so even at very slow speeds it's an awful lot faster to display numbers than it is to scroll them on the micro:bit's built in LED array. Using this simplistic approach, I'm hoping the code will be more useful to people who want to drive these displays than something that depends on UART or I2C hardware or libraries.
+
+## TM1650 communication protocol 
 
 A very brief overview of the communication protocol, for the curious:
 
-It's "like" I2C. You have a clock line controlled by the host, and a biderectional data line. For this class, the facility to read back from the display is effectively unused - ACK bits sent back during display updates are read but discarded and there are no methods included (at the moment) to support the keyboard aspect of the chip.
+It's "like" I2C. You have a clock line controlled by the host, and a biderectional data line. For this extension, the facility to read back from the display is effectively un-used - ACK bits sent back during display updates are read but discarded and there are no methods included (at the moment) to support the keyboard aspect of the chip.
 
 Clock and data lines start both set high (idle state).
 
-In general, data line must not change while clock line is high, and data are clocked into the display when the clock line goes from high to low, so the general line sequence for a bit is, from a position where the clock is low, set data, take clock high, take clock low again, move to next bit.
+In general, the data line must not change while the clock line is high, and data are clocked into the display when the clock line goes from high to low, so the general line sequence for a bit is, from a position where the clock is low, set data, take clock high, take clock low again, move on to the next bit. Bytes are sent starting with the most significant bit (MSB first). 
 
-Transactions are started with a "start" signal, which DOES change the data line with clock high - a high-to-low transition on the data line while the clock line is high represents a start signal.
+The beginning of a transaction is signaled with a "start" sequence, which is distinguished by violating the rule about not changing the data line while the clock is high. A high-to-low transition on the data line while the clock line is high represents "start". At the end of a transaction, taking data from high to low while clock is high signifies "stop". Every complete transation comprises "start", then two bytes, then "stop". Each byte includes an extra clock pulse after which an ACK bit is signaled on the data line by the TM1650.
 
-After the start signal, eight bits are clocked out in big-endian order (most significant first) and then a further clock elicits an ACK bit from the display. Then a second group of eight bits are sent and a second ACK bit obtained on the nineth clock.
+In more detail: after the start signal, eight bits are clocked out in big-endian order (most significant first) and then a further ninth clock elicits an ACK bit from the display. This can be read by the host during the next clock period (during which it should not generate another clock pulse). Then a second group of eight bits are sent and a second ACK bit obtained. After the two bytes are sent, the host sends a stop sequence which involves taking the clock high, then taking data high, in that order. The communication lines are then back in the "idle" state. 
 
-After two bytes are sent, the host sends a stop sequence which involves taking the clock highm waiting a bit, then taking data high (back to the idle state). 
+The two bytes are basically an address/data pair. They are either referred to as "command 1, command 2" or as "address, data" in the datasheet, depending on the first byte. Turning the display on is achieved by sending 0x48 as "command 1" and a "display on" code as "command 2". Writing segment data to the display involves sending one of four addresses - one for each digit - followed by a byte that represents a bit pattern that maps onto the segments.
 
-The two bytes are basically an address/data pair. They are either referred to as "command 1, command 2" or as "address, data" in the datasheet, depending on the behaviour. Turning the display on is achieved by sending 0x48 and a "display on" command. Writing to the display involves sending one of 4 addresses - one per digit - followed by a byte that represents a bit pattern that maps onto the segments. The display doesn't seem to come to life merely by sending a "display on" transaction from cold, it seems to need to go through a couple of complete trasactions before waking up, and I've not really established the exact minimum sequence.
+This extension contains tables of bit patterns and mappings from ASCII character codes to the patterns. It maintains a host copy of the raw state of each digit, to allow the decimal points to be switched on and off independently while maintaining existing contents. It tries to be clever when displaying strings by not using, if it can avoid it, digit segments where decimal points/full stops are to be rendered, i.e. it will use 2 digits to show "2.4", not three. Leading decimal points or multiple adjacent full stops will consume additional digits, but where possible they are combined with the character to their left.
 
-The code here contains tables of bit patterns and mappings from ASCII character codes to the patterns. It maintains a host copy of the raw state of each digit, to allow the decimal points to be switched on and off independently while maintaining existing contents. It tries to be clever when displaying strings by not using, if it can avoid it, digit segments where decimal points/full stops are to be rendered, i.e. it will use 2 digits to show "2.4", not three.
-
-Timings default to a data rate of about 2000baud, timed using the control.waitMicros() delay. Port numbers and speed are configurable. It doesn't need to be very fast because updating the entire display only takes 8 bytes of serial traffic - mine also seems happy to run at 4000baud, I've not tested to find the maximum.
+Serial data timing defaults to a data rate of about 4000kbps, timed using the control.waitMicros() delay. Port pin numbers and data rate are configurable. It doesn't need to be very fast because updating the entire display only takes 8 bytes of serial traffic. As you increase the speed, the "baud rate" is increasingly inaccurate, because of overheads with the bit-banged approach. Actual data rate is always slower than that set, both in raw clock timing terms and because of additional ACK bits and so on. With speeds around 100kbps or more, some of the sub-bit timings reduce to a call to control.waitMicros() for a zero delay, i.e. just the function call overhead. The display I tested this with works fine at the fastest speed I could achieve using this approach, nominally a bit over 100kbps, the maximum setting allowed by the extension is 200kbps but it can't achieve that in reality. It will probably be quicker, at the faster rates, on a Micro:bit V2. Exact speed isn't critical, and there's no need to use "standard" baud rates, speed can be changed at any time (even mid-transaction, theoretically). 
 
 ## Basic Usage
 
-The function to initialise the display creates a named instance, attached to a specified pair of I/O pins. It also sets the current display instance to that created. 
+tm1650Display.configure(name, scl, sda) - The function to initialise the display creates a named instance, attached to a specified pair of I/O pins. It also sets the "current display" to the instance created. The "name" argument is an arbitrary string and should be a seachable unique name for the display instance. scl and sda Arguments are of type DigitalPin, e.g. DigitalPin.P1, representing the clock and data line pins.
 
-The function to turn an initialised display on also sets the brightness level from 1 to 7 in increasing brightness, or 0 (default) max brightness. This function also sets the named display to be the default, or does nothing if the named display doesn't exist.
+tm1650Display.displayOn(name, brightness) - Turns on the named display. Also sets the currently selected display to that named. If it can't find a display instance with that name, or if no displays have been configured, it does nothing. The brightness parameter sets the display brightness - zero means full brightness, 1 to 7 means less than full brightness with 1 being the least bright. You can use this displayOn function to set the current display among multiple displays, and to change the brightness, it can be called as often as you like on a configured display.
 
-Other functions use the current default display instance. So if you have multiple displays initialised, switch between them using the "turn display on" function. Turning a display off makes it blank, but doesn't un-initialise or delete it. There is no "delete display" function - once instantiated, displays remain. Because these simple units don't have an ID, they can't share a pair of lines, unless you add some kind of additional hardware multiplexing. 
+tm1650Display.setSpeed(baud) - Sets the communication speed of the currently selected display. Can be set at any time on a configured display, needn't remain the same once set, needn't use "standard" baud rates.
 
-The underlying display type is a class that can just be used directly if desired. Character and digit address tables were originally in the class but have been taken outside to make them const.
+tm1650Display.displayClear() - blank all digits of the currently selected display by writing zero data to them.
+
+tm1650Display.displayOff()   - blank all digits of the currently selected display by turning it off. Display retains its current digit contents. Does not change the currently selected display. Display won't show any changes until turned back on with displayOn(), but re-writing the digit contents should work even though it remains dark while off. 
+
+tm1650Display.showNumber(n), showDecimal(n), showHex(n) - display numbers using all four digits. See individual tooltips/comments.
+
+tm1650Display.showChar(pos, c) - show an individual character, given as an ASCII character code, at display digit "pos", where pos is 0 to 3, with 0 as the leftmost digit. Obviously the range of characters is limited - see comments/tooltips. 
+
+tm1650Display.showString(s) - show a string. Strings are truncated to fit in four digits. Decimal points/full stops are where possible combined with adjacent characters to use fewer digits and look more the way you'd expect. Obviously the range of characters is limited, see tooltips/comments.
+
+tm1650Display.digitRaw(pos) - return segment data for the given digit position, 0 to 3, 0 is leftmost. Returns a number representing the bit pattern set at the given digit of the display, with '1' bits corresponding to the segments lit. Does not read from the display, just an internal buffer.
+
+tm1650Display.digitChar(pos) - return character code corresponding to the bit pattern set at the given digit position. Works by interpreting bit pattern and returns the first matching character, so something that was written as a letter I will read back as a figure 1, for example. Returns zero for spaces and unrecognized patterns.
+
+tm1650Display.digits() - returns a four character string representing the contents of the display with the same caveats as digitChar(), above.
+
+Unless otherwise stated, all functions use the currently selected display instance, which can be altered only by configure() or displayOn(). So if you have multiple displays initialised, switch between them using the displayOn() function. Turning a display off makes it blank, but doesn't un-initialise or delete it. There is no "delete display" function - once instantiated, displays remain. Because these simple units don't have an ID, they can't share a pair of lines, unless you add some kind of additional hardware multiplexing.
+
+The underlying display type is a class that can just be used directly if desired. Character and digit address tables were originally in the class but have been taken outside to make them const. The code is deliberately simple and generic so that it can readily be repurposed for other platforms/languages.
+
+## Examples
+
+The following will configure, turn on and display "HELO" on a tm1650 based 4-digit display with its clock line connected to pin P1 and its data line connected to in P0:
+
+    tm1650Display.configure("display1", DigitalPin.P1, DigitalPin.P0)
+    tm1650Display.displayOn("display1", 5)
+    tm1650Display.showString("HEL0")
+    
+The following will configure two displays using pins P1 and P0 for one, P3 and P2 for the other, and display "HELO" on one and "3.141" on the other.
+
+    tm1650Display.configure("disp1", DigitalPin.P1, DigitalPin.P0)  /* disp1 is now the selected display */
+    tm1650Display.configure("disp2", DigitalPin.P3, DigitalPin.P2)  /* now disp2 is the selected display */
+    tm1650Display.displayOn("disp1", 5)                             /* disp1 is again the selected display */
+    tm1650Display.showString("HEL0")
+    tm1650Display.displayOn("disp2", 3)   /* disp2 is now the selected display, and a bit dimmer than disp1 */
+    tm1650Display.showDecimal(3.141)
+
 
 ## General
 
