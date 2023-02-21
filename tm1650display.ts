@@ -15,10 +15,13 @@ namespace tm1650Display {
         }
         public setSpeed( baud : number = 4166 ){
             let clockLength = 1000000 / baud   /* microseconds per clock */
-            if(clockLength > 10) {
+            if(clockLength >= 5) {
                 this.pulseWidth = Math.floor(clockLength / 2)
                 this.halfPulseWidth = Math.floor(clockLength / 4)
                 this.shortDelay = Math.floor(clockLength / 10)
+                if(this.shortdelay == 0){
+                    this.shortdelay = Math.floor(clocklength / 5)
+                }
             }
         }
         public reconfigure(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {    
@@ -446,7 +449,7 @@ namespace tm1650Display {
 
     //% help=tm1650Display/setSpeed tm1650Display weight=25
     //% blockId=tm1650Display_setSpeed block="TM1650 change interface speed|baud %baud"
-    //% baud.min=200 baud.max=100000 baud.defl=4000
+    //% baud.min=200 baud.max=200000 baud.defl=4000
     //% parts="TM1650"
     export function setSpeed( baud : number = 4000 ){
         if(instanceCount > 0){        
