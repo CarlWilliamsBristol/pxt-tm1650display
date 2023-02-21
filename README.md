@@ -1,6 +1,6 @@
-## TM1650 4-digit 7-segment LED display driver
+## Titan Micro Electronics TM1650 4-digit 7-segment LED display driver
 
-This is a BBC micro:bit MakeCode extension and class to drive 4-digit 7-segment LED display based on the TM1650 chip. Written for and tested with a "Gravity" branded unit from PiHut, see: https://thepihut.com/products/gravity-4-digit-red-seven-segment-led-display-module. Displays based on this or similar chips are available from various "maker" stores and they tend to be cheaper than typical I2C display modules. Display modules that also include push-buttons are available, but this extension does not support reading back push-button values (although it could readily be extended to do so). 
+This is a BBC micro:bit MakeCode extension and class to drive 4-digit 7-segment LED display based on the Titan Micro Electronics TM1650 chip. Written for and tested with a "Gravity" branded unit from PiHut, see: https://thepihut.com/products/gravity-4-digit-red-seven-segment-led-display-module. Displays based on this or similar chips are available from various "maker" stores and they tend to be cheaper than typical I2C display modules. Display modules that also include push-buttons are available, but this extension does not support reading back push-button values (although it could readily be extended to do so). 
 
 The TM1650 is intended for use in consumer electronics as a single display and push-button interface. It has a 2-wire serial interface clocked by the host that resembles I2C, but isn't. In particular, it has no device ID and it can't share a bus with other devices, not even other TM1650 devices, at least not without some additional hardware to mimic I2C type behaviour. If you hook one of these up to the I2C lines on a BBC micro:bit, the micro:bit hangs during startup because the TM1650 reacts with ACK bits as the micro:bit tries to query/configure other devices on the bus. 
 
@@ -21,6 +21,8 @@ Clock and data lines start both set high (idle state).
 In general, the data line must not change while the clock line is high, and data are clocked into the display when the clock line goes from high to low, so the general line sequence for a bit is, from a position where the clock is low, set data, take clock high, take clock low again, move on to the next bit. Bytes are sent starting with the most significant bit (MSB first). 
 
 The beginning of a transaction is signaled with a "start" sequence, which is distinguished by violating the rule about not changing the data line while the clock is high. A high-to-low transition on the data line while the clock line is high represents "start". At the end of a transaction, taking data from high to low while clock is high signifies "stop". Every complete transation comprises "start", then two bytes, then "stop". Each byte includes an extra clock pulse after which an ACK bit is signaled on the data line by the TM1650.
+
+![diagram excerpt from Titanmec datasheet (c) Titan Micro Electronics used without permission under fair use quotation guidelines](https://github.com/carlwilliamsbristol/pxt-tm1650display/raw/master/bit_sequence.png)
 
 In more detail: after the start signal, eight bits are clocked out in big-endian order (most significant first) and then a further ninth clock elicits an ACK bit from the display. This can be read by the host during the next clock period (during which it should not generate another clock pulse). Then a second group of eight bits are sent and a second ACK bit obtained. After the two bytes are sent, the host sends a stop sequence which involves taking the clock high, then taking data high, in that order. The communication lines are then back in the "idle" state. 
 
@@ -99,7 +101,7 @@ To edit this repository in MakeCode.
 
 ## Blocks preview
 
-![A rendered view of the blocks](https://github.com/carlwilliamsbristol/pxt-tm1650display/raw/master/.github/makecode/blocks.png)
+![A rendered view of the blocks](https://github.com/carlwilliamsbristol/pxt-tm1650display/raw/master/block_preview.png)
 
 #### Metadata (used for search, rendering)
 
