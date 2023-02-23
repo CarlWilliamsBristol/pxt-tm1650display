@@ -32,6 +32,10 @@ namespace tm1650Display {
         public reconfigure(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) : void {    
             this.clockPin = clock
             this.dataPin = data
+            pins.digitalWritePin(this.clockPin, 0)
+            pins.digitalWritePin(this.dataPin, 0)
+            pins.setPull(this.dataPin, PinPullMode.PullUp)
+            pins.digitalWritePin(this.dataPin, 0)
             this.goIdle()
         }
         public displayOn(brightness: number = 0) : void {
@@ -309,19 +313,16 @@ namespace tm1650Display {
                 bitMask >>= 1
             }
             /* Clock is now low and we want the ACK bit so this time read SDA */
-            /* SDA is unknown, give a brief delay then drop data to zero */
-            control.waitMicros(this.shortDelay)
-            pins.digitalWritePin(this.dataPin, 0)
+            ackBit = pins.digitalReadPin(this.dataPin) /* put pin in read mode with pullup */
             control.waitMicros(this.pulseWidth)
             /* Do one clock */
             pins.digitalWritePin(this.clockPin, 1)
             control.waitMicros(this.pulseWidth)
+            ackBit = pins.digitalReadPin(this.dataPin) /* read actual ACK bit */
             pins.digitalWritePin(this.clockPin, 0)
-            /* Display takes 120+ microseconds to send ack */
+            /* Display takes about half a pulse width to release SDA */
             control.waitMicros(this.halfPulseWidth + this.shortDelay)
-            ackBit = pins.digitalReadPin(this.dataPin)
             pins.digitalWritePin(this.dataPin, 0)
-            control.waitMicros(this.halfPulseWidth)
         }
     }
     let instanceNames: string[] = []
