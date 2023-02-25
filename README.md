@@ -84,6 +84,16 @@ The following will configure two displays using pins P1 and P0 for one, P3 and P
     tm1650Display.showDecimal(3.141)
 ```
 
+## Limitations
+
+If you connect a TM1650 based display to any of the GPIOs used for the Micro:Bit LED matrix, chances are the LED matrix drive will mess with it and it won't work. That limits the number of 7-segment displays you can use without either adding hardware or removing the LED matrix drivers. This means, practically speaking, avoid P3, P4, P6, P7, P9 and P10. Although P12 is "reserved" it works fine, but avoid it for forward compatible community projects. P19 and P20 are the default I2C and a V1 Micro:Bit hangs up if you attach one of these displays to those lines.
+
+If you want to drive a load of these from one Micro:bit (perhaps to build a time machine display or something :-) ), probably best to use a shift register on one line and a bunch of bidirectional tristate buffers of some sort to switch display units onto the same data and clock lines, or use a cheap MCU with lots of GPIOs as an expander/I2C decoder. (A RP2040 is cheaper than most 74x logic these days, and somewhat more versatile).
+
+## Development
+
+If anyone wants to add read-back functionality to provide an interface to the TM1650 keyboard capability, feel free to submit patches, but try to resist the temptation to turn it into some massive all-singing package that is too bloated or convoluted to be easily adapted to bare-minimum platforms like ATTiny. The simplistic structure as it is as the moment allows people to easily strip stuff out that is un-needed - it won't break if you just delete the number display stuff, for example. 
+
 ## General
 
 > Open this page at [https://carlwilliamsbristol.github.io/pxt-tm1650display/](https://carlwilliamsbristol.github.io/pxt-tm1650display/)
