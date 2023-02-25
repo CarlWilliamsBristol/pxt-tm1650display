@@ -15,14 +15,14 @@ namespace tm1650Display {
         }
         public setSpeed( baud : number = 8333 ) : void {
             /* baud = microseconds per bit, clockLength - clock pulse width */
-            let clockLength = 250
+            let clockLength = 120
             /* V2 is faster and the microsecond delay function overheads less. 
-               This is a for-now hack to try to ensure it works on a V2 with the 
-               speed set high enough to cause problems (though the display is 
-               supposed to be good for 5Mbps. Cap to 100000 on V2.) */
-            if(control.hardwareVersion() != "1"){
-                if(baud > 100000) {
-                    baud = 100000 
+               This is a for-now hack to try to ensure it works on a V2 if the 
+               speed is set high enough to cause problems; although the display is 
+               supposed to be good for 5Mbps, cap at nominal 160kbps on V2.) */
+            if(control.hardwareVersion().charAt(0) != "1"){
+                if(baud > 160000) {
+                    baud = 160000 
                 }
             }
             /* Time per bit transmitted is one clock cycle, 2 pulse widths */
