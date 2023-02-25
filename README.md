@@ -36,7 +36,11 @@ This extension contains tables of bit patterns and mappings from ASCII character
 
 Serial data timing defaults to a data rate of about 8000kbps, timed using the control.waitMicros() delay. Port pin numbers and data rate are configurable. It doesn't need to be very fast because updating the entire display only takes 8 bytes of serial traffic. As you increase the speed, the "baud rate" is increasingly inaccurate, because of overheads with the bit-banged approach. This is especially so on the V1 Micro:bit boards, the V2 is quite a bit faster. Actual data rate is always slower than that set, both in raw clock timing terms and because of additional ACK bits and so on. With speeds around 100kbps or more, some of the sub-bit timings reduce to a call to control.waitMicros() for a zero delay, i.e. just the function call overhead. The display I tested this with works fine at the fastest speed I could achieve using this approach on a V1 micro:bit, nominally a bit over 100kbps. The maximum setting allowed by the extension is 200kbps and if you set that speed it should work, but the micro:bit can't achieve that in reality using this approach in Typescript. It is quicker, at the faster rates, on a Micro:bit V2, and I had to introduce a wait for the display to de-assert ACK, followed an explicit half clock delay, to be able to set higher speeds on a V2. 
 
-Exact speed isn't critical, and there's no need to use "standard" baud rates, speed can be changed at any time (even mid-transaction, theoretically). 
+Exact speed isn't critical, and there's no need to use "standard" baud rates, speed can be changed at any time (even mid-transaction, theoretically).
+
+A less idealised line discipline diagram might look more like this:
+
+![diagram showing timing detail](https://github.com/carlwilliamsbristol/pxt-tm1650display/raw/master/IIC_timing.png)
 
 ## Basic Usage
 
