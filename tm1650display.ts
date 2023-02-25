@@ -21,14 +21,9 @@ namespace tm1650Display {
             if(clockLength >= 4) {
                 this.pulseWidth = Math.floor(clockLength / 2)
                 this.halfPulseWidth = Math.floor(clockLength / 4)
-                this.shortDelay = Math.floor(clockLength / 10)
-                if(this.shortDelay == 0){
-                    this.shortDelay = Math.floor(clockLength / 5)
-                }
             } else {
                 this.pulseWidth = 2
                 this.halfPulseWidth = 1
-                this.shortDelay = 0
             }
         }
         public reconfigure(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) : void {    
@@ -234,7 +229,6 @@ namespace tm1650Display {
         private dataPin: DigitalPin = DigitalPin.P0
         private pulseWidth: number = 120
         private halfPulseWidth: number = 60
-        private shortDelay: number = 24
         private charToIndex(c: number) {
             let charCode = 30
             if (c < 30) {
@@ -283,7 +277,6 @@ namespace tm1650Display {
             pins.digitalWritePin(this.dataPin, 0)
             control.waitMicros(this.pulseWidth)
             pins.digitalWritePin(this.clockPin, 0)
-            control.waitMicros(this.shortDelay)
         }
         private goIdle() {
             pins.digitalWritePin(this.clockPin, 1)
