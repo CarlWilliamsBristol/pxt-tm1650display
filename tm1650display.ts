@@ -13,24 +13,27 @@ namespace tm1650Display {
         constructor(clock: DigitalPin = DigitalPin.P1, data: DigitalPin = DigitalPin.P0) {
             this.reconfigure(clock, data)
         }
-        public setSpeed( baud : number = 4166 ) : void {
+        public setSpeed( baud : number = 8333 ) : void {
             /* baud = microseconds per bit, clockLength - clock pulse width */
             let clockLength = 250
             /* V2 is faster and the microsecond delay function overheads less. 
                This is a for-now hack to try to ensure it works on a V2 with the 
                speed set high enough to cause problems (though the display is 
-               supposed to be good for 5Mbps. Cap to 100000 on V2.)
+               supposed to be good for 5Mbps. Cap to 100000 on V2.) */
             if(control.hardwareVersion() != "1"){
                 if(baud > 100000) {
                     baud = 100000 
                 }
-            } */
+            }
             /* Time per bit transmitted is one clock cycle, 2 pulse widths */
             clockLength = 1000000 / baud
             if(clockLength >= 4) {
                 this.pulseWidth = Math.floor(clockLength / 2)
                 this.halfPulseWidth = Math.floor(clockLength / 4)
                 this.shortDelay = Math.floor(clockLength / 10)
+                if(this.shortDelay == 0){
+                    this.shortDelay = Math.floor(clockLength / 5)
+                }
             } else {
                 this.pulseWidth = 2
                 this.halfPulseWidth = 1
@@ -551,14 +554,13 @@ namespace tm1650Display {
 
     /**
      * Set the approximate bit rate of the serial communication with the currently selected tm1650 based display.
-     * This becomes less accurate as the speed increases because of general overheads in the "bit-banged" transmission method.
-     * The display is clocked synchronously from the host and supports arbitrary speeds, there is no need to pick "standard"
-     * baud rates like 9600 or 19200. Anything much above 100,000 baud uses minimum delays in parts of the transmission and
-     * there's no particular practical increase in speed up to the maximum which is nominally 200kbps. Actual throughput
-     * is always somewhat lower because of extra bits and inter-byte delays. These displays appear to work OK up to 
-     * the maximum, and speed can be changed at any time after a display is configured, faster or slower, it should still work.
-     * It takes at most 8 bytes to update the whole display, roughly 80 bits, so for most purposes any speed from about 2000 bits/sec is fine,
-     * it's still a great deal faster than showing numbers on the micro:bit LED arrray. For longer wires in noisy environments, pick lower speeds.
+     * This becomes less accurate as the speed increases because of "bit-banged" overheads.
+     * There is no need to pick "standard" baud rates like 9600 or 19200. Anything much above 100,000 baud uses 
+     * minimum delays and there's no practical increase in speed up to the maximum. Actual throughput
+     * is always lower because of extra bits and inter-byte delays. These displays appear to work OK up to 
+     * the maximum on a V1 and up to 100kbps (setting) on a V2. Speed can be changed at any time after a display is configured.
+     * It takes at most 8 bytes to update the whole display, so for most purposes any speed from about 2000 bits/sec is fine,
+     * For longer wires in noisy environments, pick lower speeds.
      * @param the desired approximate baud rate, bits per second.
      */
     //% help=tm1650Display/setSpeed tm1650Display weight=25
