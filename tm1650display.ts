@@ -15,17 +15,19 @@ namespace tm1650Display {
         }
         public setSpeed( baud : number = 4166 ) : void {
             /* baud = microseconds per bit, clockLength - clock pulse width */
-            let clockLength = 500000 / baud
+            let clockLength = 250
+            /* Time per bit transmitted is one clock cycle, 2 pulse widths */
+            clockLength = 1000000 / baud
             if(clockLength >= 4) {
                 this.pulseWidth = Math.floor(clockLength / 2)
                 this.halfPulseWidth = Math.floor(clockLength / 4)
                 this.shortDelay = Math.floor(clockLength / 10)
                 if(this.shortDelay == 0){
-                    this.shortDelay = Math.floor(clockLength / 5)
+                    this.shortDelay = 1
                 }
             } else {
                 this.pulseWidth = 1
-                this.halfPulseWidth = 0
+                this.halfPulseWidth = 1
                 this.shortDelay = 0
             }
         }
