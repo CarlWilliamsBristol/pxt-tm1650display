@@ -55,6 +55,149 @@ namespace tm1650DisplayTests {
             }
         }
     }
+    function kitt() {
+        tm1650Display.displayOn("disp2", 6)
+        tm1650Display.displayClear()
+        tm1650Display.displayOn("disp1", 6)
+        tm1650Display.displayClear()
+        for (let index = 0; index <= 3; index++) {
+            tm1650Display.showChar(index, 48)
+            basic.pause(50)
+            tm1650Display.showChar(index, 32)
+        }
+        tm1650Display.displayOn("disp2", 6)
+        for (let index = 0; index <= 3; index++) {
+            tm1650Display.showChar(index, 48)
+            basic.pause(50)
+            tm1650Display.showChar(index, 32)
+        }
+        basic.pause(75)
+        for (let index = 0; index <= 3; index++) {
+            tm1650Display.showChar(3 - index, 48)
+            basic.pause(50)
+            tm1650Display.showChar(3 - index, 32)
+        }
+        tm1650Display.displayOn("disp1", 6)
+        for (let index = 0; index <= 3; index++) {
+            tm1650Display.showChar(3 - index, 48)
+            basic.pause(50)
+            tm1650Display.showChar(3 - index, 32)
+        }
+    }
+    function countHexDec(startnum: number, to: number, delay: number, inc: number) {
+        let value = startnum
+        if (delay == 0) {
+            while (value <= to) {
+                tm1650Display.displayOn("disp1", 6)
+                tm1650Display.showInteger(value)
+                tm1650Display.displayOn("disp2", 6)
+                tm1650Display.showHex(value)
+                value += inc
+            }
+        } else {
+            while (value <= to) {
+                tm1650Display.displayOn("disp1", 6)
+                tm1650Display.showInteger(value)
+                tm1650Display.displayOn("disp2", 6)
+                tm1650Display.showHex(value)
+                basic.pause(delay)
+                value += inc
+            }
+        }
+    }
+    function sayHi() {
+        let greets:string[] = [
+            "H",
+            "E",
+            "L",
+            "L",
+            "O",
+            "!",
+            ""
+        ]
+        for (let index = 0; index <= 6; index++) {
+            tm1650Display.displayOn("disp1", index + 1)
+            tm1650Display.displayOn("disp2", index + 1)
+            basic.showString("" + (greets[index]))
+            basic.pause(200)
+        }
+    }
+    function showPatternAllDigits(pattern: number) {
+        tm1650Display.displayOn("disp1", 6)
+        tm1650Display.showSegments(0, pattern)
+        tm1650Display.showSegments(1, pattern)
+        tm1650Display.showSegments(2, pattern)
+        tm1650Display.showSegments(3, pattern)
+        tm1650Display.displayOn("disp2", 6)
+        tm1650Display.showSegments(0, pattern)
+        tm1650Display.showSegments(1, pattern)
+        tm1650Display.showSegments(2, pattern)
+        tm1650Display.showSegments(3, pattern)
+    }
+    function zerosOff() {
+        tm1650Display.displayOn("disp1", 6)
+        tm1650Display.showString("0000")
+        tm1650Display.displayOn("disp2", 6)
+        tm1650Display.showString("0000")
+        basic.pause(50)
+        tm1650Display.displayOn("disp1", 6)
+        tm1650Display.showString(" 000")
+        tm1650Display.displayOn("disp2", 6)
+        tm1650Display.showString(" 000")
+        basic.pause(50)
+        tm1650Display.displayOn("disp1", 6)
+        tm1650Display.showString("  00")
+        tm1650Display.displayOn("disp2", 6)
+        tm1650Display.showString("  00")
+        basic.pause(50)
+        tm1650Display.displayOn("disp1", 6)
+        tm1650Display.showString("   0")
+        tm1650Display.displayOn("disp2", 6)
+        tm1650Display.showString("   0")
+    }
+    function spinDigits() {
+        let pat = 0
+        for (let index = 0; index <= 71; index++) {
+            pat = pat * 2
+            if (pat > 32) {
+                pat = 1
+            }
+            showPatternAllDigits(pat)
+            basic.pause(71 - index)
+        }
+    }
+    export function demoTM1650Disp() {
+        tm1650Display.configure("disp1", DigitalPin.P1, DigitalPin.P0)
+        tm1650Display.configure("disp2", DigitalPin.P13, DigitalPin.P12)
+        tm1650Display.displayOn("disp1", 1)
+        tm1650Display.setSpeed(190000)
+        tm1650Display.showString("HEL0")
+        tm1650Display.displayOn("disp2", 1)
+        tm1650Display.setSpeed(190000)
+        tm1650Display.showString("HEL0")
+        while(1) {
+            sayHi()
+            spinDigits()
+            zerosOff()
+            countHexDec(0, 7, 75, 1)
+            countHexDec(8, 20, 400, 1)
+            countHexDec(21, 32, 200, 1)
+            countHexDec(33, 55, 100, 1)
+            countHexDec(56, 1024, 0, 1)
+            countHexDec(1025, 2125, 0, 11)
+            countHexDec(2126, 9896, 0, 111)
+            countHexDec(9897, 9997, 0, 10)
+            countHexDec(9898, 9999, 0, 1)
+            basic.pause(2000)
+            kitt()
+            kitt()
+            tm1650Display.displayOn("disp1", 1)
+            tm1650Display.showString(" 5A ")
+            tm1650Display.showSegments(3, 110)
+            tm1650Display.displayOn("disp2", 1)
+            tm1650Display.showString(" HI ")
+        }
+    }
 }
 
 /*
