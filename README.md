@@ -96,7 +96,13 @@ If you want to drive a load of these from one Micro:bit (perhaps to build a time
 
 ## Development
 
-If anyone wants to add read-back functionality to provide an interface to the TM1650 keyboard capability, feel free to submit patches, but try to resist the temptation to turn it into some massive all-singing package that is too bloated or convoluted to be easily adapted to bare-minimum platforms like ATTiny. The simplistic structure as it is as the moment allows people to easily strip stuff out that is un-needed - it won't break if you just delete the number display stuff, for example. 
+If anyone wants to add read-back functionality to provide an interface to the TM1650 keyboard capability, feel free to submit patches, but try to resist the temptation to turn it into some massive all-singing package that is too bloated or convoluted to be easily adapted to bare-minimum platforms like ATTiny. The simplistic structure as it is as the moment allows people to easily strip stuff out that is un-needed - it won't break if you just delete the number display stuff, for example.
+
+## License
+
+(c) Copyright 2023 Carl Williams
+
+Licensed under the MIT License (MIT). See LICENSE file for more details.
 
 ## General
 
