@@ -24,7 +24,7 @@ Clock and data lines start both set high (idle state).
 
 In general, the data line must not change while the clock line is high, and data are clocked into the display when the clock line goes from high to low, so the general line sequence for a bit is, from a position where the clock is low, set data, take clock high, take clock low again, move on to the next bit. Bytes are sent starting with the most significant bit (MSB first). 
 
-The beginning of a transaction is signaled with a "start" sequence, which is distinguished by violating the rule about not changing the data line while the clock is high. A high-to-low transition on the data line while the clock line is high represents "start". At the end of a transaction, taking data from high to low while clock is high signifies "stop". Every complete transation comprises "start", then two bytes, then "stop". Each byte includes an extra clock pulse for an ACK bit that is signalled on the data line by the TM1650.
+The beginning of a transaction is signaled with a "start" sequence, which is distinguished by violating the rule about not changing the data line while the clock is high. A high-to-low transition on the data line while the clock line is high represents "start". At the end of a transaction, taking data from low to high while clock is high signifies "stop". Every complete transation comprises "start", then two bytes, then "stop". Each byte includes an extra clock pulse for an ACK bit that is signalled on the data line by the TM1650.
 
 ![diagram excerpt from Titanmec datasheet (c) Titan Micro Electronics used without permission under fair use quotation guidelines](https://github.com/carlwilliamsbristol/pxt-tm1650display/raw/master/bit_sequence.png)
 
